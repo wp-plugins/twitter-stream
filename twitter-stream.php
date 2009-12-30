@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Twitter Stream
-Plugin URI: http://return-true.com/
+Plugin URI: http://return-true.com/2009/12/wordpress-plugin-twitter-stream/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
 Version: 1.0
 Author: Paul Robinson
