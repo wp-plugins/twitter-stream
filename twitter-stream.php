@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Twitter Stream
-Plugin URI: http://return-true.com/2009/12/wordpress-plugin-twitter-stream/
+Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.0
+Version: 1.1
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -20,6 +20,7 @@ Author URI: http://return-true.com
 	If you wish to customize things here are the CSS commands available.
 	.at-reply is for @replys, .hash-tag is for #tags, finally a.twitter-link and
 	a:hover.twitter-link are for autolinked URLs within the twitter stream.
+	a.twitter-date & a:hover.twitter-date is for the date's permalink.
 */
 //Setup the notice just in case a PHP version less than 5 is installed.
 add_action('admin_head', 'twitter_stream_activation_notice');
@@ -37,7 +38,16 @@ function twitter_stream_show_notice() {
 		echo '<div class="error fade"><p><strong>You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience.</strong></p></div>';
 }
 
-function twitter_stream($username, $count = "10") {
+function twitter_stream($username, $count = "10", $date = FALSE) {
+	
+	if(version_compare(PHP_VERSION, '5.0.0', '<')) {
+		echo 'You must have PHP5 or higher for this plugin to work.';
+		return FALSE;
+	}
+	if(empty($username)) {
+		echo 'You must provide a username';
+		return FALSE;
+	}
 	
 	$cache_path = dirname(__FILE__).'/'.$username.'.cache';
 	
@@ -120,10 +130,37 @@ function twitter_stream($username, $count = "10") {
 		return FALSE;
 	}
 	$output = ''; //Create a blank string for concatenation
-	
+		
 	//For each status update loop through
 	foreach($twitxml->status as $tweet) {
-		$output .= "<p>".$tweet->text."</p>";	//Concat it's text to the variable inside paragraph's for neatness.
+		//Find all URL's mentioned and store them in $matches.            
+		$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
+		$out_count = preg_match_all($pattern, $tweet->text, $matches);
+	
+		//If there were any matches
+		if($out_count > 0) {
+			//Loop through all the full matches
+			foreach($matches[0] as $match) {
+				//Use a simple string replace to replace each URL with a HTML <a href>.
+				$tweet->text = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $tweet->text);	
+			}
+		}
+				
+		$output .= "<p>".$tweet->text;
+		
+		if($date !== FALSE) {
+			$tweet->created_at = strtotime($tweet->created_at);
+				
+			if($date === TRUE || $date == 'true' || $date == 'TRUE' || $date == '1') {
+				$output .= ' - ';
+			} else {
+				$date = trim($date);
+				$output .= " {$date} ";	
+			}
+			$output .= "<a href=\"http://twitter.com/{$username}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
+		}
+		
+		$output .= "</p>";
 	}
 	
 	//Now let's do some highlighting & auto linking.
@@ -131,17 +168,6 @@ function twitter_stream($username, $count = "10") {
 	$output = preg_replace('~(\@[a-z0-9_]+)~is', '<span class="at-reply">$1</span>', $output);
 	//Find all the #tags and place them in a span so CSS can be used to highlight them.
 	$output = preg_replace('~(\#[a-z0-9_]+)~is', '<span class="hash-tag">$1</span>', $output);
-	//Find all URL's mentioned and store them in $matches.            
-    $pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
-   	$out_count = preg_match_all($pattern, $output, $matches);
-	//If there were any matches
-	if($out_count > 0) {
-		//Loop through all the full matches
-		foreach($matches[0] as $match) {
-			//Use a simple string replace to replace each URL with a HTML <a href>.
-			$output = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $output);	
-		}
-	}
 	
 	
 	echo '<div class="twitter-stream">'.$output.'</div>';
@@ -228,6 +254,31 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
    return $response;
 }
 
+//Work out the time in the AGO tense. Thanks to http://css-tricks.com for this snippet...
+function twitter_stream_time_ago($time)
+{
+   $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
+   $lengths = array("60","60","24","7","4.35","12","10");
+
+   $now = time();
+
+       $difference     = $now - $time;
+       $tense         = "ago";
+
+   for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
+       $difference /= $lengths[$j];
+   }
+
+   $difference = round($difference);
+
+   if($difference != 1) {
+       $periods[$j].= "s";
+   }
+
+   return "{$difference} {$periods[$j]} {$tense}";
+}
+
+
 //For the widget to work you must have WP 2.8 or higher.
 if(get_bloginfo('version') >= '2.8') {
 
@@ -242,12 +293,15 @@ if(get_bloginfo('version') >= '2.8') {
 			if(empty($instance['count']))
 				$instance['count'] = 10;
 			if(empty($instance['username']))
-				$instance['username'] = 'veneficusunus';
+				$instance['username'] = '';
+			if(empty($instance['date']))
+				$instance['date'] = FALSE;
+			
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
 	 
-						  <?php twitter_stream($instance['username'], $instance['count']); ?>
+						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date']); ?>
 	 
 				  <?php echo $after_widget; ?>
 			<?php
@@ -263,10 +317,12 @@ if(get_bloginfo('version') >= '2.8') {
 			$title = esc_attr($instance['title']);
 			$username = esc_attr($instance['username']);
 			$count = esc_attr($instance['count']);
+			$date = esc_attr($instance['date']);
 			?>
 				<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
                 <p><label for="<?php echo $this->get_field_id('username'); ?>"><?php _e('Twitter Username:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label></p>
-				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How many Zazzle update to show:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
+				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How Many Twitter Updates To Show:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
+                <p><label for="<?php echo $this->get_field_id('date'); ?>"><?php _e('Show The Date:'); ?><br /><small>(Leave blank to turn off, type a separator, true or 1 will show the date)</small> <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" /></label></p>
 			<?php 
 	
 		}
