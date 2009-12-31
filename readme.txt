@@ -10,7 +10,7 @@ Twitter Stream is a very simple Twitter plugin designed to show a users Twitter 
 
 == Description ==
 
-Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline.
+Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
 A widget is included, but you must have WordPress version 2.8 or higher for it to work, however standard useage should work down to version 2.5 although it has not been tested.
 
