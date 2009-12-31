@@ -16,7 +16,18 @@ A widget is included, but you must have WordPress version 2.8 or higher for it t
 
 Twitter Stream requires PHP5 due to the use of SimpleXML. If you do not have PHP5 installed you will not be able to use this plugin.
 
-Twitter Stream is also designed to be very lightweight & use the smallest amount of resources possible, ideal for shared or low memory servers. 
+Twitter Stream is also designed to be very lightweight & use the smallest amount of resources possible, ideal for shared or low memory servers.
+
+Here is a quick run down of the features available in Twitter Stream.
+
+
+1. Show the twitter timeline for any public username.
+1. Choose how many tweets to show.
+1. A Widget or template function is available.
+1. File caching to stop API overuse.
+1. Optional date shown in xx ago format, also links to permalink for the tweet. (Requested by Ron)
+1. Customizeable via CSS. (see the 'Can I Style It?' section below)
+
 
 == Installation ==
 
