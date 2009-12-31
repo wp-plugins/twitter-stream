@@ -26,7 +26,7 @@ Here is a quick run down of the features available in Twitter Stream.
 1. A Widget or template function is available.
 1. File caching to stop API overuse.
 1. Optional date shown in xx ago format, also links to permalink for the tweet. (Requested by Ron)
-1. Customizeable via CSS. (see the 'Can I Style It?' section below)
+1. Customizeable via CSS. (see 'Can I Style It?' in the FAQ)
 
 
 == Installation ==
