@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.1
+Version: 1.2
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -22,6 +22,7 @@ Author URI: http://return-true.com
 	a:hover.twitter-link are for autolinked URLs within the twitter stream.
 	a.twitter-date & a:hover.twitter-date is for the date's permalink.
 */
+
 //Setup the notice just in case a PHP version less than 5 is installed.
 add_action('admin_head', 'twitter_stream_activation_notice');
 
@@ -38,7 +39,7 @@ function twitter_stream_show_notice() {
 		echo '<div class="error fade"><p><strong>You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience.</strong></p></div>';
 }
 
-function twitter_stream($username, $count = "10", $date = FALSE) {
+function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) {
 	
 	if(version_compare(PHP_VERSION, '5.0.0', '<')) {
 		echo 'You must have PHP5 or higher for this plugin to work.';
@@ -68,48 +69,9 @@ function twitter_stream($username, $count = "10", $date = FALSE) {
 	
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
 	if(!isset($content)) {
-		//As CURL is the preferable way to collect the info from Twitter let's assume it's installed & then check for it.
-		$method = 'curl';
-		if(!function_exists('curl_init')) {
-			$method = 'fopen';
-			//if CURL isn't installed assume fopen has URL access enabled, then check.
-		}
-		if(ini_get('allow_url_fopen') == '0') {
-			$method = 'socket';
-			//as fopen doesn't have URL access enabled drop back to custom socket access. See function twit_getRemoteFile()
-		}
-		
 		//Set the twitter URL
 		$twitter_url = 'https://twitter.com/statuses/user_timeline/'.$username.'.xml?count='.$count;
-
-		if($method == 'curl') {
-				
-			//initialize a new curl resource
-			$ch = curl_init();	
-			//Fetch the timeline
-			curl_setopt($ch, CURLOPT_URL, $twitter_url);
-			//do it via GET
-			curl_setopt($ch, CURLOPT_GET, 1);
-			//Live on the edge & trust Twitters SSL Certificate
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-			//Give me the data back as a string... Don't echo it.
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-			//Warp 9, Engage!
-			$content = curl_exec($ch);
-			//Close CURL connection & free the used memory.
-			curl_close($ch); 		
-		
-		} elseif($method == 'fopen') {
-					
-			//Now let's get the twitter stream
-			$content = file_get_contents($twitter_url, FALSE, $ctx);
-		
-		} elseif($method == 'socket') {
-				
-			//Run the custom socket function to get the twitter stream
-			$content = twitter_stream_getRemoteFile($twitter_url);
-		
-		}
+		$content = twitter_stream_connect($twitter_url, $auth);
 	}
 	
 	if($cache === FALSE) {
@@ -126,7 +88,17 @@ function twitter_stream($username, $count = "10", $date = FALSE) {
 	@$twitxml = simplexml_load_string($content); //Supress errors as we check for any next anyway.
 	if($twitxml === FALSE) {
 		//Twitter was unable to provide the stream requested. Let's notify the user.
-		echo '<p>Your Twitter stream could not be collected. The most probable reason is that Twitter\'s API is unavailable or your website has exceeded the API limits imposed by Twitter.</p>';
+		echo '<p>Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear. :(</p>';
+		return FALSE;
+	}
+	if(isset($twitxml->error)) {
+		//Check for an error such as API overuse and display it.
+		echo '<p>'.$twitxml->error.'</p>';
+		return FALSE;
+	}
+	if(!isset($twitxml->status[0]->user)) {
+		//If we are fine so far make sure Twitter returned User info. If it didn't the chances are the user doesn't exist.
+		echo '<p>No user information was returned. This normally happens when you have used an incorrect or invalid username.</p>';	
 		return FALSE;
 	}
 	$output = ''; //Create a blank string for concatenation
@@ -192,6 +164,103 @@ function twitter_stream_cache($modtime, $cache_path) {
 	
 }
 
+//function to check how many API calls the current calling IP has left.
+function twitter_stream_ban_check($auth = FALSE) {
+		
+	$twitter_url = 'http://twitter.com/account/rate_limit_status.xml';
+	$content = twitter_stream_connect($twitter_url, $auth);
+	
+	@$twitxml = simplexml_load_string($content);	
+	$twitxml->{"reset-time"} = strtotime($twitxml->{"reset-time"});
+	$twitxml->{"reset-time"} = date('l jS, F Y @ H:i:s', (int) $twitxml->{"reset-time"});
+	
+	echo "<p>Hits Remaining: ".$twitxml->{"remaining-hits"}."<br />
+	      Hourly Limit: ".$twitxml->{"hourly-limit"}."<br />
+		  Reset Time: ".$twitxml->{"reset-time"}."<br /></p>";
+		
+}
+
+function twitter_stream_connect($twitter_url, $auth = FALSE) {
+	
+	if($auth === FALSE) {
+		unset($auth);
+	}
+
+	$method = 'curl';
+	if(!function_exists('curl_init')) {
+		$method = 'fopen';
+		//if CURL isn't installed assume fopen has URL access enabled, then check.
+	}
+	if(ini_get('allow_url_fopen') == '0') {
+		$method = 'socket';
+		//as fopen doesn't have URL access enabled drop back to custom socket access. See function twit_getRemoteFile()
+	}
+
+	if($method == 'curl') {
+			
+		//initialize a new curl resource
+		$ch = curl_init();	
+		//Fetch the timeline
+		curl_setopt($ch, CURLOPT_URL, $twitter_url);
+		//do it via GET
+		curl_setopt($ch, CURLOPT_GET, 1);
+		//For Debug purposes turn this to 1, delete cache & echo the contents before parsed by SimpleXML.
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		if(isset($auth)) {
+			//Authentication
+			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+			//Set user and pass
+			curl_setopt($ch, CURLOPT_USERPWD, "{$auth['username']}:{$auth['password']}");
+		}
+		//Live on the edge & trust Twitters SSL Certificate
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		//Give me the data back as a string... Don't echo it.
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		//Warp 9, Engage!
+		$content = curl_exec($ch);
+		//Close CURL connection & free the used memory.
+		curl_close($ch); 
+		
+		//Check for failure. If cURL failed report to the user.
+		if($content === FALSE) {
+			echo '<p>cURL failed to retrieve any results.</p>';
+			return FALSE;
+		}
+	
+	} elseif($method == 'fopen') {
+		
+		if(isset($auth)) {
+		
+			$ctx = stream_context_create(array(
+    											'http' => array(
+        										'header'  => "Authorization: Basic " . base64_encode("{$auth['username']}:{$auth['password']}")
+    													)
+												)
+						);
+		}
+		//Now let's get the twitter stream
+		$content = file_get_contents($twitter_url, FALSE, $ctx);
+		
+		//Check for failure. If fopen failed report to the user.
+		if($content === FALSE) {
+			echo '<p>fopen failed to retrieve any results.</p>';
+			return FALSE;
+		}
+	
+	} elseif($method == 'socket') {
+		
+		if(!isset($auth)) {
+			$auth = FALSE;	
+		}
+		
+		//Run the custom socket function to get the twitter stream
+		$content = twitter_stream_getRemoteFile($twitter_url, $auth);
+	
+	}
+	
+	return $content;
+}
+
 //Custom socket function... Just in case.
 function twitter_stream_getRemoteFile($url, $auth = FALSE) {
    // get the host name and url path
@@ -220,9 +289,12 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
 
    // connect to the remote server
    $fp = @fsockopen($host, '80', $errno, $errstr, $timeout );
-   //Base encode the username & password for basic auth
-   //$auth = base64_encode($auth['username'].':'.$auth['password']);
+   if($auth) {
+	   $auth = base64_encode($auth['username'].':'.$auth['password']);
+	   $auth = "Authorization: Basic {$auth}\r\n";
+   }
    if( !$fp ) {
+	  echo '<p>Unable to open a fsocketopen connection to Twitter. Ooops!</p>';
       return FALSE;
    } else {
 	   
@@ -234,7 +306,7 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
                  "Accept-Language: en-us,en;q=0.5\r\n" .
                  "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n" .
                  "Keep-Alive: 300\r\n" .
-				 //"Authorization: Basic {$auth}\r\n" .
+				 "{$auth}" .
                  "Connection: keep-alive\r\n" .
                  "Referer: http://$host\r\n\r\n");
 
@@ -296,12 +368,16 @@ if(get_bloginfo('version') >= '2.8') {
 				$instance['username'] = '';
 			if(empty($instance['date']))
 				$instance['date'] = FALSE;
-			
+			if(empty($instance['password']))
+				$instance['password'] = FALSE;
+			if($instance['password'] !== FALSE && !empty($instance['username'])) {
+			    $auth = array('username' => $instance['username'], 'password' => $instance['password']);
+			}
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
-	 
-						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date']); ?>
+	 					
+						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date'], $auth); ?>
 	 
 				  <?php echo $after_widget; ?>
 			<?php
@@ -316,11 +392,13 @@ if(get_bloginfo('version') >= '2.8') {
 		function form($instance) {                
 			$title = esc_attr($instance['title']);
 			$username = esc_attr($instance['username']);
+			$password = esc_attr($instance['password']);
 			$count = esc_attr($instance['count']);
 			$date = esc_attr($instance['date']);
 			?>
 				<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
                 <p><label for="<?php echo $this->get_field_id('username'); ?>"><?php _e('Twitter Username:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label></p>
+                <p><label for="<?php echo $this->get_field_id('password'); ?>"><?php _e('Twitter Password:'); ?><br /><small>(Only needed if your tweets are protected or you have oversteped the API limit.)<input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" /></label></p>
 				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How Many Twitter Updates To Show:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
                 <p><label for="<?php echo $this->get_field_id('date'); ?>"><?php _e('Show The Date:'); ?><br /><small>(Leave blank to turn off, type a separator, true or 1 will show the date)</small> <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" /></label></p>
 			<?php 
