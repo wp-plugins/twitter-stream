@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.2
+Version: 1.3
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -105,7 +105,8 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 		
 	//For each status update loop through
 	foreach($twitxml->status as $tweet) {
-		//Find all URL's mentioned and store them in $matches.            
+		//Find all URL's mentioned and store them in $matches. 
+		$tweet->text = htmlentities($tweet->text);
 		$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
 		$out_count = preg_match_all($pattern, $tweet->text, $matches);
 	
