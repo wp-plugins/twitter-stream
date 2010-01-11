@@ -4,7 +4,7 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 2.9.1
-Stable tag: 1.3
+Stable tag: 1.4
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
@@ -55,6 +55,9 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
 == Changelog ==
+
+= 1.4 =
+* Added a bug fix for some strange PHP bug. Bug number #36795...
 
 = 1.3 =
 * Added htmlentities() for escaping special characters such as ampersands etc..

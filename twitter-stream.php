@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.3
+Version: 1.4
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -84,8 +84,11 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 		fclose($fp);
 	}
 	
+	//Some sort of strange fix for unterminated entities in XML. Possibly related to PHP bug #36795.
+	$content = str_replace('&amp;', '&amp;amp;', $content);
 	//Convert the string recieved from twitter into a simple XML object.
 	@$twitxml = simplexml_load_string($content); //Supress errors as we check for any next anyway.
+
 	if($twitxml === FALSE) {
 		//Twitter was unable to provide the stream requested. Let's notify the user.
 		echo '<p>Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear. :(</p>';
@@ -106,7 +109,6 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 	//For each status update loop through
 	foreach($twitxml->status as $tweet) {
 		//Find all URL's mentioned and store them in $matches. 
-		$tweet->text = htmlentities($tweet->text);
 		$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
 		$out_count = preg_match_all($pattern, $tweet->text, $matches);
 	
