@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: twitter-stream\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-01-12 19:34-0000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Paul Robinson <pablorobinson@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: twitter-stream.php:51
+msgid "You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience."
+msgstr ""
+
+#: twitter-stream.php:58
+msgid "You must have PHP5 or higher for this plugin to work."
+msgstr ""
+
+#: twitter-stream.php:62
+msgid "You must provide a username"
+msgstr ""
+
+#: twitter-stream.php:108
+msgid "Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear."
+msgstr ""
+
+#: twitter-stream.php:120
+msgid "No user information was returned. This normally happens when you have used an incorrect or invalid username."
+msgstr ""
+
+#: twitter-stream.php:247
+msgid "cURL failed to retrieve any results."
+msgstr ""
+
+#: twitter-stream.php:269
+msgid "fopen failed to retrieve any results."
+msgstr ""
+
+#: twitter-stream.php:322
+msgid "Unable to open a fsocketopen connection to Twitter."
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "second"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "minute"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "hour"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "day"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "week"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "month"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "year"
+msgstr ""
+
+#: twitter-stream.php:358
+msgid "decade"
+msgstr ""
+
+#: twitter-stream.php:364
+msgid "ago"
+msgstr ""
+
+#: twitter-stream.php:425
+msgid "Title:"
+msgstr ""
+
+#: twitter-stream.php:426
+msgid "Twitter Username:"
+msgstr ""
+
+#: twitter-stream.php:427
+msgid "Twitter Password:"
+msgstr ""
+
+#: twitter-stream.php:427
+msgid "(Only needed if your tweets are protected or you have oversteped the API limit.)"
+msgstr ""
+
+#: twitter-stream.php:428
+msgid "How Many Twitter Updates To Show:"
+msgstr ""
+
+#: twitter-stream.php:429
+msgid "Show The Date:"
+msgstr ""
+
+#: twitter-stream.php:429
+msgid "(Leave blank to turn off, type a separator, true or 1 will show the date)"
+msgstr ""
+
