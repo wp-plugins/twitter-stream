@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.4
+Version: 1.5
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -23,6 +23,17 @@ Author URI: http://return-true.com
 	a.twitter-date & a:hover.twitter-date is for the date's permalink.
 */
 
+//Init for translations
+add_action( 'init', 'twitter_stream_init' );
+
+// Initialize the text domain for translations.
+function twitter_stream_init() {
+	
+	$plugin_dir = basename(dirname(__FILE__));
+	load_plugin_textdomain( 'twit_stream', 'wp-content/plugins/' . $plugin_dir, $plugin_dir );
+	
+}
+
 //Setup the notice just in case a PHP version less than 5 is installed.
 add_action('admin_head', 'twitter_stream_activation_notice');
 
@@ -36,17 +47,19 @@ function twitter_stream_activation_notice() {
 }
 //Define the notification function for the check above. Advise the user to upgrade their PHP version or uninstall & consider an alternative plugin.
 function twitter_stream_show_notice() {
-		echo '<div class="error fade"><p><strong>You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience.</strong></p></div>';
+		echo '<div class="error fade"><p><strong>';
+		_e('You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience.', 'twit_stream');
+		echo '</strong></p></div>';
 }
 
 function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) {
 	
 	if(version_compare(PHP_VERSION, '5.0.0', '<')) {
-		echo 'You must have PHP5 or higher for this plugin to work.';
+		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
 	}
 	if(empty($username)) {
-		echo 'You must provide a username';
+		_e('You must provide a username', 'twit_stream');
 		return FALSE;
 	}
 	
@@ -91,7 +104,9 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 
 	if($twitxml === FALSE) {
 		//Twitter was unable to provide the stream requested. Let's notify the user.
-		echo '<p>Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear. :(</p>';
+		echo '<p>';
+		_e('Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear.', 'twit_stream');
+		echo '</p>';
 		return FALSE;
 	}
 	if(isset($twitxml->error)) {
@@ -101,7 +116,9 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 	}
 	if(!isset($twitxml->status[0]->user)) {
 		//If we are fine so far make sure Twitter returned User info. If it didn't the chances are the user doesn't exist.
-		echo '<p>No user information was returned. This normally happens when you have used an incorrect or invalid username.</p>';	
+		echo '<p>';
+		_e('No user information was returned. This normally happens when you have used an incorrect or invalid username.', 'twit_stream');
+		echo '</p>';	
 		return FALSE;
 	}
 	$output = ''; //Create a blank string for concatenation
@@ -226,7 +243,9 @@ function twitter_stream_connect($twitter_url, $auth = FALSE) {
 		
 		//Check for failure. If cURL failed report to the user.
 		if($content === FALSE) {
-			echo '<p>cURL failed to retrieve any results.</p>';
+			echo '<p>';
+			_e('cURL failed to retrieve any results.', 'twit_stream');
+			echo '</p>';
 			return FALSE;
 		}
 	
@@ -246,7 +265,9 @@ function twitter_stream_connect($twitter_url, $auth = FALSE) {
 		
 		//Check for failure. If fopen failed report to the user.
 		if($content === FALSE) {
-			echo '<p>fopen failed to retrieve any results.</p>';
+			echo '<p>';
+			_e('fopen failed to retrieve any results.', 'twit_stream');
+			echo '</p>';
 			return FALSE;
 		}
 	
@@ -297,7 +318,9 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
 	   $auth = "Authorization: Basic {$auth}\r\n";
    }
    if( !$fp ) {
-	  echo '<p>Unable to open a fsocketopen connection to Twitter. Ooops!</p>';
+	  echo '<p>';
+	  _e('Unable to open a fsocketopen connection to Twitter.', 'twit_stream');
+	  echo '</p>';
       return FALSE;
    } else {
 	   
@@ -332,13 +355,13 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
 //Work out the time in the AGO tense. Thanks to http://css-tricks.com for this snippet...
 function twitter_stream_time_ago($time)
 {
-   $periods = array("second", "minute", "hour", "day", "week", "month", "year", "decade");
+   $periods = array(__("second", 'twit_stream'), __("minute", 'twit_stream'), __("hour", 'twit_stream'), __("day", 'twit_stream'), __("week", 'twit_stream'), __("month", 'twit_stream'), __("year", 'twit_stream'), __("decade", 'twit_stream'));
    $lengths = array("60","60","24","7","4.35","12","10");
 
    $now = time();
 
        $difference     = $now - $time;
-       $tense         = "ago";
+       $tense         = __("ago", 'twit_stream');
 
    for($j = 0; $difference >= $lengths[$j] && $j < count($lengths)-1; $j++) {
        $difference /= $lengths[$j];
@@ -399,11 +422,11 @@ if(get_bloginfo('version') >= '2.8') {
 			$count = esc_attr($instance['count']);
 			$date = esc_attr($instance['date']);
 			?>
-				<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('username'); ?>"><?php _e('Twitter Username:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('password'); ?>"><?php _e('Twitter Password:'); ?><br /><small>(Only needed if your tweets are protected or you have oversteped the API limit.)<input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" /></label></p>
-				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How Many Twitter Updates To Show:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('date'); ?>"><?php _e('Show The Date:'); ?><br /><small>(Leave blank to turn off, type a separator, true or 1 will show the date)</small> <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" /></label></p>
+				<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
+                <p><label for="<?php echo $this->get_field_id('username'); ?>"><?php _e('Twitter Username:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label></p>
+                <p><label for="<?php echo $this->get_field_id('password'); ?>"><?php _e('Twitter Password:', 'twit_stream'); ?><br /><small><?php _e('(Only needed if your tweets are protected or you have oversteped the API limit.)', 'twit_stream'); ?><input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" /></label></p>
+				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How Many Twitter Updates To Show:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
+                <p><label for="<?php echo $this->get_field_id('date'); ?>"><?php _e('Show The Date:', 'twit_stream'); ?><br /><small><?php _e('(Leave blank to turn off, type a separator, true or 1 will show the date)', 'twit_stream'); ?></small> <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" /></label></p>
 			<?php 
 	
 		}
