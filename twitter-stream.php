@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.5
+Version: 1.6
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -355,7 +355,8 @@ function twitter_stream_getRemoteFile($url, $auth = FALSE) {
 //Work out the time in the AGO tense. Thanks to http://css-tricks.com for this snippet...
 function twitter_stream_time_ago($time)
 {
-   $periods = array(__("second", 'twit_stream'), __("minute", 'twit_stream'), __("hour", 'twit_stream'), __("day", 'twit_stream'), __("week", 'twit_stream'), __("month", 'twit_stream'), __("year", 'twit_stream'), __("decade", 'twit_stream'));
+   $singular = array(__("second", 'twit_stream'), __("minute", 'twit_stream'), __("hour", 'twit_stream'), __("day", 'twit_stream'), __("week", 'twit_stream'), __("month", 'twit_stream'), __("year", 'twit_stream'), __("decade", 'twit_stream'));
+   $plural = array(__("seconds", 'twit_stream'), __("minutes", 'twit_stream'), __("hours", 'twit_stream'), __("days", 'twit_stream'), __("weeks", 'twit_stream'), __("months", 'twit_stream'), __("years", 'twit_stream'), __("decades", 'twit_stream'));
    $lengths = array("60","60","24","7","4.35","12","10");
 
    $now = time();
@@ -370,10 +371,12 @@ function twitter_stream_time_ago($time)
    $difference = round($difference);
 
    if($difference != 1) {
-       $periods[$j].= "s";
+	    $period = $plural[$j];
+   } else {
+		$period = $singular[$j];    
    }
 
-   return "{$difference} {$periods[$j]} {$tense}";
+   return "{$difference} {$period} {$tense}";
 }
 
 
