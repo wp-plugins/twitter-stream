@@ -28,6 +28,7 @@ Here is a quick run down of the features available in Twitter Stream.
 1. Optional date shown in xx ago format, also links to permalink for the tweet. (Requested by Ron)
 1. Customizeable via CSS. (see 'Can I Style It?' in the FAQ)
 1. Authentication for more accurate API counting & so protected users can show their tweets.
+1. Translation files for different languages are now available to download on my [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for translation files.").
 
 
 == Installation ==
