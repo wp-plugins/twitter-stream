@@ -4,7 +4,7 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 2.9.1
-Stable tag: 1.6
+Stable tag: 1.7
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
@@ -28,7 +28,7 @@ Here is a quick run down of the features available in Twitter Stream.
 1. Optional date shown in xx ago format, also links to permalink for the tweet. (Requested by Ron)
 1. Customizeable via CSS. (see 'Can I Style It?' in the FAQ)
 1. Authentication for more accurate API counting & so protected users can show their tweets.
-1. Translation files for different languages are now available to download on my [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for translation files.").
+1. Translation files for different languages are now available to download on my [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for translation files."). Blank .po file included in zip for translators.
 
 
 == Installation ==
@@ -56,6 +56,9 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
 == Changelog ==
+
+= 1.7 =
+* Fixed stupid widget HTML error that caused WP's text to go tiny.
 
 = 1.6 =
 * Added i18n pluralization support for xx ago time system.

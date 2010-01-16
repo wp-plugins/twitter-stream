@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.6
+Version: 1.7
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -425,11 +425,43 @@ if(get_bloginfo('version') >= '2.8') {
 			$count = esc_attr($instance['count']);
 			$date = esc_attr($instance['date']);
 			?>
-				<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('username'); ?>"><?php _e('Twitter Username:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('password'); ?>"><?php _e('Twitter Password:', 'twit_stream'); ?><br /><small><?php _e('(Only needed if your tweets are protected or you have oversteped the API limit.)', 'twit_stream'); ?><input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" /></label></p>
-				<p><label for="<?php echo $this->get_field_id('count'); ?>"><?php _e('How Many Twitter Updates To Show:', 'twit_stream'); ?> <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" /></label></p>
-                <p><label for="<?php echo $this->get_field_id('date'); ?>"><?php _e('Show The Date:', 'twit_stream'); ?><br /><small><?php _e('(Leave blank to turn off, type a separator, true or 1 will show the date)', 'twit_stream'); ?></small> <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" /></label></p>
+				<p>
+                  <label for="<?php echo $this->get_field_id('title'); ?>">
+				    <?php _e('Title:', 'twit_stream'); ?>
+                    <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" />
+                  </label>
+                </p>
+                <p>
+                  <label for="<?php echo $this->get_field_id('username'); ?>">
+				    <?php _e('Twitter Username:', 'twit_stream'); ?>
+                  <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label>
+                </p>
+                <p>
+                  <label for="<?php echo $this->get_field_id('password'); ?>">
+				    <?php _e('Twitter Password:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+				      <?php _e('(Only needed if your tweets are protected or you have oversteped the API limit.)', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" />
+                  </label>
+                </p>
+				<p>
+                  <label for="<?php echo $this->get_field_id('count'); ?>">
+				    <?php _e('How Many Twitter Updates To Show:', 'twit_stream'); ?>
+                    <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" type="text" value="<?php echo $count; ?>" />
+                  </label>
+                </p>
+                <p>
+                  <label for="<?php echo $this->get_field_id('date'); ?>">
+				    <?php _e('Show The Date:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+					  <?php _e('(Leave blank to turn off, type a separator, true or 1 will show the date)', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" />
+                  </label>
+                </p>
 			<?php 
 	
 		}
