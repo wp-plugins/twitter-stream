@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.7
+Version: 1.8
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -52,20 +52,52 @@ function twitter_stream_show_notice() {
 		echo '</strong></p></div>';
 }
 
-function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) {
+function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, $profile_link = 'Visit My Profile', $args = FALSE) {
 	
-	if(version_compare(PHP_VERSION, '5.0.0', '<')) {
+	if(is_array($args)) { //Is it an array?
+		$r = &$args; //Good, reference out arguments into our options array.
+	} else {
+		parse_str($args, $r); //It's a query string, parse out our values into our options array.
+	}
+	
+	if(empty($r)) { //As we have changed from parameters to query string/array support we will support the old method for a version or two.
+		if(is_array($auth)) {
+			$auth = $auth['password'];
+		} elseif(empty($auth)) {
+			$auth = FALSE;
+		}
+		
+		$r = array(
+				 'username' => $username,
+				 'count' => $count,
+				 'date' => $date,
+				 'password' => $auth,
+				 'profile_link' => $profile_link
+				 );
+	}
+	
+	$defaults = array( //Set some defaults
+					'username' => '',
+					'count' => '10',
+					'date' => FALSE,
+					'password' => FALSE,
+					'profile_link' => 'Visit My Profile'
+					);
+	$r = array_merge($defaults, $r); //Merge our defaults array onto our options array to fill in any missing values with defaults.
+	
+	if(version_compare(PHP_VERSION, '5.0.0', '<')) { //Checked before hand, but if the user didn't listen tell them off & refuse to run.
 		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
 	}
 	if(empty($username)) {
-		_e('You must provide a username', 'twit_stream');
+		_e('You must provide a username', 'twit_stream'); //Must have a username our it's pointless even trying to run.
 		return FALSE;
 	}
 	
-	$cache_path = dirname(__FILE__).'/'.$username.'.cache';
+	$cache_path = dirname(__FILE__).'/'.$r['username'].'.cache'; //Set our cache path. Can be changed if you feel the need.
 	
-	//Caching is used to prevent us from hitting the 20,000 per hour TwitterAPI request limit.
+	//Caching is used to help prevent us from hitting the 150 per hour (20,000 if whilelisted) TwitterAPI request limit.
+	//Being on a shared server can negate the effects of caching, but it still helps you not get blacklisted.
 	//First we need to check to see if a cache file has already been made.
 	if(file_exists($cache_path)) {
 		$modtime = filemtime($cache_path); //Get the time the file was last modified.
@@ -83,7 +115,12 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
 	if(!isset($content)) {
 		//Set the twitter URL
-		$twitter_url = 'https://twitter.com/statuses/user_timeline/'.$username.'.xml?count='.$count;
+		$twitter_url = 'https://twitter.com/statuses/user_timeline/'.$r['username'].'.xml?count='.$r['count'];
+		if($r['password'] == FALSE) {
+			$auth = FALSE;
+		} else {
+			$auth = array('username' => $r['username'], 'password' => $r['password']);
+		}
 		$content = twitter_stream_connect($twitter_url, $auth);
 	}
 	
@@ -143,23 +180,25 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE) 
 		if($date !== FALSE) {
 			$tweet->created_at = strtotime($tweet->created_at);
 				
-			if($date === TRUE || $date == 'true' || $date == 'TRUE' || $date == '1') {
+			if($r['date'] === TRUE || $r['date'] == 'true' || $r['date'] == 'TRUE' || $r['date'] == '1') {
 				$output .= ' - ';
 			} else {
-				$date = trim($date);
-				$output .= " {$date} ";	
+				$r['date'] = trim($r['date']);
+				$output .= " {$r['date']} ";	
 			}
-			$output .= "<a href=\"http://twitter.com/{$username}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
+			$output .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
 		}
 		
 		$output .= "</p>";
 	}
 	
 	//Now let's do some highlighting & auto linking.
-	//Find all the @replys and place them in a span so CSS can be used to highlight them.
-	$output = preg_replace('~(\@[a-z0-9_]+)~is', '<span class="at-reply">$1</span>', $output);
+	//Find all the @replies and place them in a span so CSS can be used to highlight them.
+	$output = preg_replace('~(\@[a-z0-9_]+)~ise', "'<span class=\"at-reply\"><a href=\"http://twitter.com/'.substr('$1', 1).'\" title=\"View '.substr('$1', 1).'\'s profile\">$1</a></span>'", $output);
 	//Find all the #tags and place them in a span so CSS can be used to highlight them.
-	$output = preg_replace('~(\#[a-z0-9_]+)~is', '<span class="hash-tag">$1</span>', $output);
+	$output = preg_replace('~(\#[a-z0-9_]+)~ise', "'<span class=\"hash-tag\"><a href=\"http://twitter.com/search?q='.urlencode('$1').'\" title=\"Search for $1 on Twitter\">$1</a></span>'", $output);
+	//Link to users profile. Can be customized via the profile_link parameter & via CSS targeting.
+	$output .= '<div class="profile-link"><a href="http://twitter.com/'.$r['username'].'" title="'.$r['profile_link'].'">'.$r['profile_link'].'</a></div>';
 	
 	
 	echo '<div class="twitter-stream">'.$output.'</div>';
@@ -402,11 +441,13 @@ if(get_bloginfo('version') >= '2.8') {
 			if($instance['password'] !== FALSE && !empty($instance['username'])) {
 			    $auth = array('username' => $instance['username'], 'password' => $instance['password']);
 			}
+			if(empty($instance['profile_link']))
+				$instance['profile_link'] = 'Visit My Profile';
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
 	 					
-						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date'], $auth); ?>
+						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date'], $auth, $instance['profile_link']); ?>
 	 
 				  <?php echo $after_widget; ?>
 			<?php
@@ -424,6 +465,7 @@ if(get_bloginfo('version') >= '2.8') {
 			$password = esc_attr($instance['password']);
 			$count = esc_attr($instance['count']);
 			$date = esc_attr($instance['date']);
+			$profile_link = esc_attr($instance['profile_link']);
 			?>
 				<p>
                   <label for="<?php echo $this->get_field_id('title'); ?>">
@@ -460,6 +502,16 @@ if(get_bloginfo('version') >= '2.8') {
 					  <?php _e('(Leave blank to turn off, type a separator, true or 1 will show the date)', 'twit_stream'); ?>
                     </small>
                     <input class="widefat" id="<?php echo $this->get_field_id('date'); ?>" name="<?php echo $this->get_field_name('date'); ?>" type="text" value="<?php echo $date; ?>" />
+                  </label>
+                </p>
+                <p>
+                  <label for="<?php echo $this->get_field_id('profile_link'); ?>">
+				    <?php _e('Profile Link Text:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+					  <?php _e('(What the link to your Twitter profile should say)', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('profile_link'); ?>" name="<?php echo $this->get_field_name('profile_link'); ?>" type="text" value="<?php echo $profile_link; ?>" />
                   </label>
                 </p>
 			<?php 

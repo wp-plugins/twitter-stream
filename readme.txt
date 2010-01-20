@@ -4,11 +4,13 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 2.9.1
-Stable tag: 1.7
+Stable tag: 1.8
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
+
+**NOTE:** In the next version (1.9) support for parameters will be discontinued. So you will no longer be able to use twitter_stream('username', '10') etc. It will be changing to traditional array or query string methods (to match WordPress. Please note when version 1.9 is released and you upgrade you will need to change this or Twitter Stream will not work. This is to allow development to continue. Sorry for any incovenience caused. Look [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "What is this about query strings?") for more details.
 
 Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
@@ -28,7 +30,10 @@ Here is a quick run down of the features available in Twitter Stream.
 1. Optional date shown in xx ago format, also links to permalink for the tweet. (Requested by Ron)
 1. Customizeable via CSS. (see 'Can I Style It?' in the FAQ)
 1. Authentication for more accurate API counting & so protected users can show their tweets.
-1. Translation files for different languages are now available to download on my [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for translation files."). Blank .po file included in zip for translators.
+1. Translation files for different languages are now available to download on my [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for translation files.").
+1. @replies now link to the user profile of the user you are replying to.
+1. #tags now link to the Twitter search page for that hash tag.
+1. Link to user's profile, customizable via CSS & via function parameter.
 
 
 == Installation ==
@@ -51,6 +56,7 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 1. a:hover.twitter-link for autolinked URL's within the timeline when they are hovered over.
 1. a.twitter-date</code> for the date permalink.
 1. a:hover.twitter-date</code> for the date permalink when it's hovered over.
+1. .profile-link for the newly added link to user profile.
 
 = I Have Some More Questions! =
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
