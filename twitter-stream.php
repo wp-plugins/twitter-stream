@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.9
+Version: 1.9.3
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -611,7 +611,7 @@ if(get_bloginfo('version') >= '2.8') {
                     <small>
 					  <?php _e('(Warning: Uses 2 API requests.)', 'twit_stream'); ?>
                     </small>
-                    <input class="widefat" id="<?php echo $this->get_field_id('retweets'); ?>" name="<?php echo $this->get_field_name('retweets'); ?>" type="checkbox" <?php if($rewteets == TRUE) echo 'checked="checked"'; ?> />
+                    <input class="widefat" id="<?php echo $this->get_field_id('retweets'); ?>" name="<?php echo $this->get_field_name('retweets'); ?>" type="checkbox" <?php if($retweets == TRUE) echo 'checked="checked"'; ?> />
                   </label>
                 </p>
 				<p>
