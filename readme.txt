@@ -4,13 +4,13 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 2.9.2
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
 
-Support for function parameters has now been discontinued as of version 1.9. You must now use an array or query string to pass options to the plugin when using the PHP function call. Those using the widget will be unaffected. Look [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "What is this about query strings?") for more details.
+Support for function parameters is still around (after a few buggy updates), but it is preferred that you change to the new array/query string feature using twitter_stream_args(); You can find more on my [blog](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "The new PHP function method.").
 
 Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
@@ -65,6 +65,9 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
 == Changelog ==
+
+= 1.9.2 =
+* Added back support for parameters, please use twitter_stream_args for array/query string support.
 
 = 1.9.1 =
 * Minor bug fix. Showed more tweets than specified count.

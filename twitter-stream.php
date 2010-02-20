@@ -53,12 +53,35 @@ function twitter_stream_show_notice() {
 		echo '</strong></p></div>';
 }
 
-function twitter_stream($args) {
+//Shell for new array/query string argument system
+function twitter_stream_args($args) {
+	twitter_stream('', '', FALSE, FALSE, '', $args);
+}
+//Old system, kept for backwards compat...
+function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, $profile_link = 'Visit My Profile', $args = FALSE) {
 
 	if(is_array($args)) { //Is it an array?
 		$r = &$args; //Good, reference out arguments into our options array.
 	} else {
 		parse_str($args, $r); //It's a query string, parse out our values into our options array.
+	}
+	
+	if(empty($r)) { //As we have changed from parameters to query string/array support we will support the old method for a version or two.
+		if(is_array($auth)) {
+			$auth = $auth['password'];
+		} elseif(empty($auth)) {
+			$auth = FALSE;
+		}
+		
+		$r = array(
+				 'username' => $username,
+				 'count' => $count,
+				 'date' => $date,
+				 'password' => $auth,
+				 'profile_link' => $profile_link
+				 );
+	} else {
+		unset($username, $count, $date, $auth, $profile_link);
 	}
 	
 	$defaults = array( //Set some defaults
@@ -510,7 +533,7 @@ if(get_bloginfo('version') >= '2.8') {
 	 					
 						  <?php 
 						  unset($instance['title']);
-						  twitter_stream($instance); 
+						  twitter_stream_args($instance); 
 						  
 						  ?>
 	 
