@@ -267,7 +267,9 @@ function twitter_stream_compile_tweets($content, $r) {
 	} else {
 		$o = FALSE;
 	}
-	
+		
+	$o = array_slice($o, 0, (int) $r['count']);
+		
 	return array($o,$followers);
 
 }
