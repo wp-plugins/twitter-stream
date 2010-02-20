@@ -3,12 +3,12 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.8
+Version: 1.9
 Author: Paul Robinson
 Author URI: http://return-true.com
 
-	Copyright (c) 2008, 2009 Paul Robinson (http://return-true.com)
-	The Attached Image is released under the GNU General Public License (GPL)
+	Copyright (c) 2009, 2010 Paul Robinson (http://return-true.com)
+	Twitter Stream is released under the GNU General Public License (GPL)
 	http://www.gnu.org/licenses/gpl.txt
 
 	This is a WordPress 2 plugin (http://wordpress.org).
@@ -45,6 +45,7 @@ function twitter_stream_activation_notice() {
 	}
 		
 }
+
 //Define the notification function for the check above. Advise the user to upgrade their PHP version or uninstall & consider an alternative plugin.
 function twitter_stream_show_notice() {
 		echo '<div class="error fade"><p><strong>';
@@ -52,28 +53,12 @@ function twitter_stream_show_notice() {
 		echo '</strong></p></div>';
 }
 
-function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, $profile_link = 'Visit My Profile', $args = FALSE) {
-	
+function twitter_stream($args) {
+
 	if(is_array($args)) { //Is it an array?
 		$r = &$args; //Good, reference out arguments into our options array.
 	} else {
 		parse_str($args, $r); //It's a query string, parse out our values into our options array.
-	}
-	
-	if(empty($r)) { //As we have changed from parameters to query string/array support we will support the old method for a version or two.
-		if(is_array($auth)) {
-			$auth = $auth['password'];
-		} elseif(empty($auth)) {
-			$auth = FALSE;
-		}
-		
-		$r = array(
-				 'username' => $username,
-				 'count' => $count,
-				 'date' => $date,
-				 'password' => $auth,
-				 'profile_link' => $profile_link
-				 );
 	}
 	
 	$defaults = array( //Set some defaults
@@ -81,15 +66,18 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 					'count' => '10',
 					'date' => FALSE,
 					'password' => FALSE,
-					'profile_link' => 'Visit My Profile'
+					'profile_link' => 'Visit My Profile',
+					'retweets' => FALSE,
+					'show_followers' => FALSE
 					);
+					
 	$r = array_merge($defaults, $r); //Merge our defaults array onto our options array to fill in any missing values with defaults.
 	
 	if(version_compare(PHP_VERSION, '5.0.0', '<')) { //Checked before hand, but if the user didn't listen tell them off & refuse to run.
 		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
 	}
-	if(empty($username)) {
+	if(empty($r['username'])) {
 		_e('You must provide a username', 'twit_stream'); //Must have a username our it's pointless even trying to run.
 		return FALSE;
 	}
@@ -104,12 +92,23 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 		$content = twitter_stream_cache($modtime, $cache_path); //Hand it to the cache function & get the data
 		if($content !== FALSE) {
 			$cache = TRUE; //Cache is still valid
+			$content = unserialize($content);
 		} else {
 			$cache = FALSE; //Cache too old invalidate it
 			unset($content); //Delete the content variable to force the script to connect to twitter & renew the cache.
+			if( function_exists('wp_cache_clear_cache') ) {
+				wp_cache_clear_cache();
+            } elseif ( function_exists('prune_super_cache') ) {
+                prune_super_cache(WP_CONTENT_DIR.'/cache/', true );
+            }
 		}
 	} else {
 		$cache = FALSE; //This is probably first run so set the cache to false so it can be created.
+		if( function_exists('wp_cache_clear_cache') ) {
+			wp_cache_clear_cache();
+        } elseif ( function_exists('prune_super_cache') ) {
+            prune_super_cache(WP_CONTENT_DIR.'/cache/', true );
+        }
 	}
 	
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
@@ -121,75 +120,43 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 		} else {
 			$auth = array('username' => $r['username'], 'password' => $r['password']);
 		}
-		$content = twitter_stream_connect($twitter_url, $auth);
+		if(($r['retweets'] === TRUE || $r['retweets'] == 'true') && (!empty($r['password']) || $r['password'] === FALSE)) {
+		
+			$content[] = twitter_stream_connect($twitter_url, $auth);
+		
+			$twitter_url = 'https://api.twitter.com/1/statuses/retweeted_by_me.xml?count='.$r['count'];
+		
+			$content[] = twitter_stream_connect($twitter_url, $auth);
+					
+		} else {
+			$content[] = twitter_stream_connect($twitter_url, $auth);
+		}
 	}
 	
 	if($cache === FALSE) {
 		//If cache was set to false we need to update the cache;
 		$fp = fopen($cache_path, 'w');
 		if(flock($fp, LOCK_EX)) {
-			fwrite($fp, $content);
+			fwrite($fp, serialize($content));
 			flock($fp, LOCK_UN);	
 		}
 		fclose($fp);
 	}
 	
-	//Some sort of strange fix for unterminated entities in XML. Possibly related to PHP bug #36795.
-	$content = str_replace('&amp;', '&amp;amp;', $content);
-	//Convert the string recieved from twitter into a simple XML object.
-	@$twitxml = simplexml_load_string($content); //Supress errors as we check for any next anyway.
-
-	if($twitxml === FALSE) {
-		//Twitter was unable to provide the stream requested. Let's notify the user.
-		echo '<p>';
-		_e('Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear.', 'twit_stream');
-		echo '</p>';
-		return FALSE;
-	}
-	if(isset($twitxml->error)) {
-		//Check for an error such as API overuse and display it.
-		echo '<p>'.$twitxml->error.'</p>';
-		return FALSE;
-	}
-	if(!isset($twitxml->status[0]->user)) {
-		//If we are fine so far make sure Twitter returned User info. If it didn't the chances are the user doesn't exist.
-		echo '<p>';
-		_e('No user information was returned. This normally happens when you have used an incorrect or invalid username.', 'twit_stream');
-		echo '</p>';	
-		return FALSE;
-	}
-	$output = ''; //Create a blank string for concatenation
-		
-	//For each status update loop through
-	foreach($twitxml->status as $tweet) {
-		//Find all URL's mentioned and store them in $matches. 
-		$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
-		$out_count = preg_match_all($pattern, $tweet->text, $matches);
 	
-		//If there were any matches
-		if($out_count > 0) {
-			//Loop through all the full matches
-			foreach($matches[0] as $match) {
-				//Use a simple string replace to replace each URL with a HTML <a href>.
-				$tweet->text = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $tweet->text);	
-			}
-		}
-				
-		$output .= "<p>".$tweet->text;
+	$combtweets = twitter_stream_compile_tweets($content, $r);
+	$followers = $combtweets[1];
+	$combtweets = $combtweets[0];
+	
+	if($combtweets === FALSE) {
+		return FALSE;
+	}
+	
+	krsort($combtweets);
+	foreach($combtweets as $tweets) {
+	
+		$output .= $tweets;
 		
-		if($date !== FALSE) {
-			$tweet->created_at = strtotime($tweet->created_at);
-				
-			if($r['date'] === TRUE || $r['date'] == 'true' || $r['date'] == 'TRUE' || $r['date'] == '1') {
-				$output .= ' - ';
-			} else {
-				$r['date'] = trim($r['date']);
-				$output .= " {$r['date']} ";	
-			}
-			$output .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
-		}
-		
-		$output .= "</p>";
 	}
 	
 	//Now let's do some highlighting & auto linking.
@@ -197,6 +164,12 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 	$output = preg_replace('~(\@[a-z0-9_]+)~ise', "'<span class=\"at-reply\"><a href=\"http://twitter.com/'.substr('$1', 1).'\" title=\"View '.substr('$1', 1).'\'s profile\">$1</a></span>'", $output);
 	//Find all the #tags and place them in a span so CSS can be used to highlight them.
 	$output = preg_replace('~(\#[a-z0-9_]+)~ise', "'<span class=\"hash-tag\"><a href=\"http://twitter.com/search?q='.urlencode('$1').'\" title=\"Search for $1 on Twitter\">$1</a></span>'", $output);
+	
+	//Show follower count
+	if($r['show_followers']) {
+		$output .= '<div class="follower-count">'.$followers.' followers</div>';
+	}
+	
 	//Link to users profile. Can be customized via the profile_link parameter & via CSS targeting.
 	$output .= '<div class="profile-link"><a href="http://twitter.com/'.$r['username'].'" title="'.$r['profile_link'].'">'.$r['profile_link'].'</a></div>';
 	
@@ -239,6 +212,67 @@ function twitter_stream_ban_check($auth = FALSE) {
 		
 }
 
+//compile together tweets
+function twitter_stream_compile_tweets($content, $r) {
+	
+	$o = array();
+
+	if(is_array($content)) {
+		
+		foreach($content as $c) {
+			
+			$twitxml = twitter_stream_convert_to_xml($c);
+			if($twitxml === FALSE) {
+				return FALSE;
+			}
+			if(empty($twitxml)) {
+				return $o;
+			}
+			$followers = $twitxml->status[0]->user->followers_count;
+			foreach($twitxml->status as $tweet) {
+			
+				//Find all URL's mentioned and store them in $matches. 
+				$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
+				$out_count = preg_match_all($pattern, $tweet->text, $matches);
+			
+				//If there were any matches
+				if($out_count > 0) {
+					//Loop through all the full matches
+					foreach($matches[0] as $match) {
+						//Use a simple string replace to replace each URL with a HTML <a href>.
+						$tweet->text = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $tweet->text);	
+					}
+				}
+						
+				$o[ (string) $tweet->id ] = "<p>".$tweet->text;
+				
+				if($r['date'] !== FALSE) {
+					$tweet->created_at = strtotime($tweet->created_at);
+						
+					if($r['date'] === TRUE || $r['date'] == 'true' || $r['date'] == 'TRUE' || $r['date'] == '1') {
+						$o[(string) $tweet->id ] .= ' - ';
+					} else {
+						$r['date'] = trim($r['date']);
+						$o[(string) $tweet->id ] .= " {$r['date']} ";	
+					}
+					$o[(string) $tweet->id ] .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
+				}
+				
+				$o[(string) $tweet->id ] .= "</p>";
+			
+			}
+			
+		}
+		
+	} else {
+		$o = FALSE;
+	}
+	
+	return array($o,$followers);
+
+}
+
+//Connect to twitter and return the content. Uses 1 of 3 methods for connection.
 function twitter_stream_connect($twitter_url, $auth = FALSE) {
 	
 	if($auth === FALSE) {
@@ -322,6 +356,30 @@ function twitter_stream_connect($twitter_url, $auth = FALSE) {
 	}
 	
 	return $content;
+}
+
+function twitter_stream_convert_to_xml($content) {
+
+	//Some sort of strange fix for unterminated entities in XML. Possibly related to PHP bug #36795.
+	$content = str_replace('&amp;', '&amp;amp;', $content);
+	//Convert the string recieved from twitter into a simple XML object.
+	@$twitxml = simplexml_load_string($content); //Supress errors as we check for any next anyway.
+
+	if($twitxml === FALSE) {
+		//Twitter was unable to provide the stream requested. Let's notify the user.
+		echo '<p>';
+		_e('Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear.', 'twit_stream');
+		echo '</p>';
+		return FALSE;
+	}
+	if(isset($twitxml->error)) {
+		//Check for an error such as API overuse and display it.
+		echo '<p>'.$twitxml->error.'</p>';
+		return FALSE;
+	}
+	
+	return $twitxml;
+
 }
 
 //Custom socket function... Just in case.
@@ -438,16 +496,21 @@ if(get_bloginfo('version') >= '2.8') {
 				$instance['date'] = FALSE;
 			if(empty($instance['password']))
 				$instance['password'] = FALSE;
-			if($instance['password'] !== FALSE && !empty($instance['username'])) {
-			    $auth = array('username' => $instance['username'], 'password' => $instance['password']);
-			}
 			if(empty($instance['profile_link']))
 				$instance['profile_link'] = 'Visit My Profile';
+			if(empty($instance['retweets']))
+				$instance['retweets'] = FALSE;
+			if(empty($instance['show_followers']))
+				$instance['show_followers'] = FALSE;
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
 	 					
-						  <?php twitter_stream($instance['username'], $instance['count'], $instance['date'], $auth, $instance['profile_link']); ?>
+						  <?php 
+						  unset($instance['title']);
+						  twitter_stream($instance); 
+						  
+						  ?>
 	 
 				  <?php echo $after_widget; ?>
 			<?php
@@ -466,6 +529,8 @@ if(get_bloginfo('version') >= '2.8') {
 			$count = esc_attr($instance['count']);
 			$date = esc_attr($instance['date']);
 			$profile_link = esc_attr($instance['profile_link']);
+			$retweets = esc_attr($instance['retweets']);
+			$show_followers = esc_attr($instance['show_followers']);
 			?>
 				<p>
                   <label for="<?php echo $this->get_field_id('title'); ?>">
@@ -483,7 +548,7 @@ if(get_bloginfo('version') >= '2.8') {
 				    <?php _e('Twitter Password:', 'twit_stream'); ?>
                     <br />
                     <small>
-				      <?php _e('(Only needed if your tweets are protected or you have oversteped the API limit.)', 'twit_stream'); ?>
+				      <?php _e('(Only needed if your tweets are protected or you have overstepped the API limit.)', 'twit_stream'); ?>
                     </small>
                     <input class="widefat" id="<?php echo $this->get_field_id('password'); ?>" name="<?php echo $this->get_field_name('password'); ?>" type="password" value="<?php echo $password; ?>" />
                   </label>
@@ -512,6 +577,26 @@ if(get_bloginfo('version') >= '2.8') {
 					  <?php _e('(What the link to your Twitter profile should say)', 'twit_stream'); ?>
                     </small>
                     <input class="widefat" id="<?php echo $this->get_field_id('profile_link'); ?>" name="<?php echo $this->get_field_name('profile_link'); ?>" type="text" value="<?php echo $profile_link; ?>" />
+                  </label>
+                </p>
+				<p>
+                  <label for="<?php echo $this->get_field_id('retweets'); ?>">
+				    <?php _e('Show Retweets:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+					  <?php _e('(Warning: Uses 2 API requests.)', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('retweets'); ?>" name="<?php echo $this->get_field_name('retweets'); ?>" type="checkbox" <?php if($rewteets == TRUE) echo 'checked="checked"'; ?> />
+                  </label>
+                </p>
+				<p>
+                  <label for="<?php echo $this->get_field_id('show_followers'); ?>">
+				    <?php _e('Show Followers:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+					  <?php _e('(Shows your follower count.)', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('show_followers'); ?>" name="<?php echo $this->get_field_name('show_followers'); ?>" type="checkbox" <?php if($show_followers == TRUE) echo 'checked="checked"'; ?> />
                   </label>
                 </p>
 			<?php 
