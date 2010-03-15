@@ -37,6 +37,12 @@ Here is a quick run down of the features available in Twitter Stream.
 1. Optional display of follower count.
 1. Retweets can now be shown. Used 2 API requests due to Twitter API limitations.
 
+A big thank you to all the people who have translated Twitter Stream into different languages.
+
+1. [Fatcow](http://www.fatcow.com/)
+1. [Tolingo.com](http://tolingo.com)
+1. [Albert Johansson](http://twitter.com/albertjohansson)
+
 
 == Installation ==
 
