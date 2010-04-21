@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.9.4
+Version: 1.9.5
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -172,6 +172,7 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 	$combtweets = $combtweets[0];
 	
 	if($combtweets === FALSE) {
+		_e('Ooop! Twitter seems to be down. Please either delete the cache file using FTP or wait until it auto clears.', 'twit_stream');
 		return FALSE;
 	}
 	
@@ -245,7 +246,7 @@ function twitter_stream_compile_tweets($content, $r) {
 		foreach($content as $c) {
 			
 			$twitxml = twitter_stream_convert_to_xml($c);
-			if($twitxml === FALSE) {
+			if($twitxml === FALSE || isset($twitxml->error)) {
 				return FALSE;
 			}
 			if(empty($twitxml)) {
@@ -267,21 +268,21 @@ function twitter_stream_compile_tweets($content, $r) {
 					}
 				}
 						
-				$o[ (string) $tweet->id ] = "<p>".$tweet->text;
+				$o["{$tweet->id}"] = "<p>".$tweet->text;
 				
 				if($r['date'] !== FALSE) {
 					$tweet->created_at = strtotime($tweet->created_at);
 						
 					if($r['date'] === TRUE || $r['date'] == 'true' || $r['date'] == 'TRUE' || $r['date'] == '1') {
-						$o[(string) $tweet->id ] .= ' - ';
+						$o["{$tweet->id}"] .= ' - ';
 					} else {
 						$r['date'] = trim($r['date']);
-						$o[(string) $tweet->id ] .= " {$r['date']} ";	
+						$o["{$tweet->id}"] .= " {$r['date']} ";	
 					}
-					$o[(string) $tweet->id ] .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
+					$o["{$tweet->id}"] .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
 				}
 				
-				$o[(string) $tweet->id ] .= "</p>";
+				$o["{$tweet->id}"] .= "</p>";
 			
 			}
 			

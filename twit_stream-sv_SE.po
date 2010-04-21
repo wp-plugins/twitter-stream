@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: twitter-stream\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-13 16:09-0000\n"
+"POT-Creation-Date: 2010-04-21 12:06-0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Paul Robinson <pablorobinson@gmail.com>\n"
 "Language-Team: \n"
@@ -13,131 +13,195 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: twitter-stream.php:51
+#: twitter-stream.php:52
+#: twitter-stream_old.php:51
 msgid "You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience."
 msgstr ""
 
-#: twitter-stream.php:58
+#: twitter-stream.php:100
+#: twitter-stream_old.php:89
 msgid "You must have PHP5 or higher for this plugin to work."
 msgstr ""
 
-#: twitter-stream.php:62
+#: twitter-stream.php:104
+#: twitter-stream_old.php:93
 msgid "You must provide a username"
 msgstr ""
 
-#: twitter-stream.php:108
-msgid "Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear."
+#: twitter-stream.php:175
+msgid "Ooop! Twitter seems to be down. Please either delete the cache file using FTP or wait until it auto clears."
 msgstr ""
 
-#: twitter-stream.php:120
-msgid "No user information was returned. This normally happens when you have used an incorrect or invalid username."
-msgstr ""
-
-#: twitter-stream.php:247
+#: twitter-stream.php:346
+#: twitter-stream_old.php:286
 msgid "cURL failed to retrieve any results."
 msgstr ""
 
-#: twitter-stream.php:269
+#: twitter-stream.php:368
+#: twitter-stream_old.php:308
 msgid "fopen failed to retrieve any results."
 msgstr ""
 
-#: twitter-stream.php:322
+#: twitter-stream.php:397
+#: twitter-stream_old.php:145
+msgid "Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear."
+msgstr ""
+
+#: twitter-stream.php:445
+#: twitter-stream_old.php:361
 msgid "Unable to open a fsocketopen connection to Twitter."
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "second"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "minute"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "hour"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "day"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "week"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "month"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "year"
 msgstr ""
 
-#: twitter-stream.php:358
+#: twitter-stream.php:481
+#: twitter-stream_old.php:397
 msgid "decade"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "seconds"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "minutes"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "hours"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "days"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "weeks"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "months"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "years"
 msgstr ""
 
-#: twitter-stream.php:359
+#: twitter-stream.php:482
+#: twitter-stream_old.php:398
 msgid "decades"
 msgstr ""
 
-#: twitter-stream.php:365
+#: twitter-stream.php:488
+#: twitter-stream_old.php:404
 msgid "ago"
 msgstr ""
 
-#: twitter-stream.php:428
+#: twitter-stream.php:563
+#: twitter-stream_old.php:472
 msgid "Title:"
 msgstr ""
 
-#: twitter-stream.php:429
+#: twitter-stream.php:569
+#: twitter-stream_old.php:478
 msgid "Twitter Username:"
 msgstr ""
 
-#: twitter-stream.php:430
+#: twitter-stream.php:574
+#: twitter-stream_old.php:483
 msgid "Twitter Password:"
 msgstr ""
 
-#: twitter-stream.php:430
-msgid "(Only needed if your tweets are protected or you have oversteped the API limit.)"
+#: twitter-stream.php:577
+msgid "(Only needed if your tweets are protected or you have overstepped the API limit.)"
 msgstr ""
 
-#: twitter-stream.php:431
+#: twitter-stream.php:584
+#: twitter-stream_old.php:493
 msgid "How Many Twitter Updates To Show:"
 msgstr ""
 
-#: twitter-stream.php:432
+#: twitter-stream.php:590
+#: twitter-stream_old.php:499
 msgid "Show The Date:"
 msgstr ""
 
-#: twitter-stream.php:432
+#: twitter-stream.php:593
+#: twitter-stream_old.php:502
 msgid "(Leave blank to turn off, type a separator, true or 1 will show the date)"
+msgstr ""
+
+#: twitter-stream.php:600
+#: twitter-stream_old.php:509
+msgid "Profile Link Text:"
+msgstr ""
+
+#: twitter-stream.php:603
+#: twitter-stream_old.php:512
+msgid "(What the link to your Twitter profile should say)"
+msgstr ""
+
+#: twitter-stream.php:610
+msgid "Show Retweets:"
+msgstr ""
+
+#: twitter-stream.php:613
+msgid "(Warning: Uses 2 API requests.)"
+msgstr ""
+
+#: twitter-stream.php:620
+msgid "Show Followers:"
+msgstr ""
+
+#: twitter-stream.php:623
+msgid "(Shows your follower count.)"
+msgstr ""
+
+#: twitter-stream_old.php:157
+msgid "No user information was returned. This normally happens when you have used an incorrect or invalid username."
+msgstr ""
+
+#: twitter-stream_old.php:486
+msgid "(Only needed if your tweets are protected or you have oversteped the API limit.)"
 msgstr ""
 
