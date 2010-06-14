@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 1.9.7
+Version: 1.9.8
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -95,7 +95,7 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 					);
 					
 	$r = array_merge($defaults, $r); //Merge our defaults array onto our options array to fill in any missing values with defaults.
-	
+
 	if(version_compare(PHP_VERSION, '5.0.0', '<')) { //Checked before hand, but if the user didn't listen tell them off & refuse to run.
 		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
@@ -143,7 +143,7 @@ function twitter_stream($username, $count = "10", $date = FALSE, $auth = FALSE, 
 		} else {
 			$auth = array('username' => $r['username'], 'password' => $r['password']);
 		}
-		if(($r['retweets'] === TRUE || $r['retweets'] == 'true') && (!empty($r['password']) || $r['password'] === FALSE)) {
+		if(($r['retweets'] === TRUE || $r['retweets'] == 'true' || $r['retweets'] == 'on') && (!empty($r['password']) || $r['password'] === FALSE)) {
 		
 			$content[] = twitter_stream_connect($twitter_url, $auth);
 		

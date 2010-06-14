@@ -4,7 +4,7 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 3.0-beta
-Stable tag: 1.9.7
+Stable tag: 1.9.8
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
@@ -72,6 +72,8 @@ To make it easier for me to answer questions & to keep everything in one place, 
 
 == Changelog ==
 
+= 1.9.8 =
+* Found a bug with retweets when used with widget
 
 = 1.9.7 =
 * Add fix for french translations
