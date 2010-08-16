@@ -10,6 +10,10 @@ Twitter Stream is a very simple Twitter plugin designed to show a users Twitter 
 
 == Description ==
 
+As of today (16/08/2010) any part of Twitter Stream that requires authentication (ReTweets) will probably not work due to Twitter turning off basic authenitcation & requiring the use of oAuth to authenticate. I had planned to add in support long before now, but I have found oAuth is extremely clunky when it comes to including it in a plugin. I am working on a fix as quickly as possible, but for now if you have any problems make sure you have not provided a password, or the password field in the widget is blank and turn off retweets.
+
+I apologise for any problems & understand if you wish to move to one of the other WordPress plugins on the plugin directory that supports oAuth.
+
 Support for function parameters is still around (after a few buggy updates), but it is preferred that you change to the new array/query string feature using twitter_stream_args(); You can find more on my [blog](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "The new PHP function method.").
 
 Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
