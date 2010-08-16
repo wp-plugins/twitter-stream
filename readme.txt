@@ -3,20 +3,16 @@ Contributors: veneficusunus
 Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
-Tested up to: 3.0-beta
-Stable tag: 1.9.8
+Tested up to: 3.0.1
+Stable tag: 2.0-beta
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
 
-As of today (16/08/2010) any part of Twitter Stream that requires authentication (ReTweets) will probably not work due to Twitter turning off basic authenitcation & requiring the use of oAuth to authenticate. I had planned to add in support long before now, but I have found oAuth is extremely clunky when it comes to including it in a plugin. I am working on a fix as quickly as possible, but for now if you have any problems make sure you have not provided a password, or the password field in the widget is blank and turn off retweets.
+Please note that while this is a beta release to check if our implementation of oAuth is working correctly, you must upgrade before the 31st of August for Twitter Stream to continue working as Twitter have started to turn off the old authentication system it used. If you encounter any errors at all please report them [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Report bugs here.").
 
-I apologise for any problems & understand if you wish to move to one of the other WordPress plugins on the plugin directory that supports oAuth.
-
-Support for function parameters is still around (after a few buggy updates), but it is preferred that you change to the new array/query string feature using twitter_stream_args(); You can find more on my [blog](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "The new PHP function method.").
-
-Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API, and three different connection types (CURL, fopen, socket). You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
+Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API. You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
 A widget is included, but you must have WordPress version 2.8 or higher for it to work, however standard useage should work down to version 2.5 although it has not been tested.
 
@@ -26,8 +22,8 @@ Twitter Stream is also designed to be very lightweight & use the smallest amount
 
 Here is a quick run down of the features available in Twitter Stream.
 
-
 1. Show the twitter timeline for any public username.
+1. Uses oAuth to connect to Twitter without ever using your password.
 1. Choose how many tweets to show.
 1. A Widget or template function is available.
 1. File caching to stop API overuse.
@@ -54,6 +50,7 @@ Download & install via the WordPress plugin repository in the admin of your blog
 
 1. Unzip the zip file.
 1. place the folder into the `wp-content/plugins` folder.
+1. Go to the options page under settings & follow the instructions to authorize Twitter Stream with your Twitter account.
 1. To use the Widget. Go to appearance, click widgets & drag it to a widgetized area of your choice & fill in the two fields required.
 1. Go [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "PHP function call") for info on how to use Twitter Stream in your template.
 
@@ -76,11 +73,8 @@ To make it easier for me to answer questions & to keep everything in one place, 
 
 == Changelog ==
 
-= 1.9.8 =
-* Found a bug with retweets when used with widget
-
-= 1.9.7 =
-* Add fix for french translations
+= 2.0-beta =
+* Changed authentication system to oAuth & made general improvements to the entire code.
 
 = 1.9.6 =
 * Once more, trying to fix ugly errors.
