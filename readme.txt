@@ -4,11 +4,13 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 3.0.1
-Stable tag: 2.0
+Stable tag: 2.0.1
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
+
+**IMPORTANT** due to an oversight on Twitters part all features that require oAuth are suspended until Twitter figure out a way to authenticate plugins without making your API keys public... **Do Not Worry** the plugin should work as normal showing tweets, retweets etc. The only thing that will not work is if your twitter account is private as it cannot log in to authenticate you.
 
 Please note that while this is a beta release to check if our implementation of oAuth is working correctly, you must upgrade before the 31st of August for Twitter Stream to continue working as Twitter have started to turn off the old authentication system it used. If you encounter any errors at all please report them [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Report bugs here.").
 
@@ -50,8 +52,7 @@ Download & install via the WordPress plugin repository in the admin of your blog
 
 1. Unzip the zip file.
 1. place the folder into the `wp-content/plugins` folder.
-1. Go to the options page under settings & follow the instructions to authorize Twitter Stream with your Twitter account.
-1. To use the Widget. Go to appearance, click widgets & drag it to a widgetized area of your choice & fill in the fields required.
+1. To use the Widget. Go to appearance, click widgets & drag it to a widgetized area of your choice & fill in the two fields required.
 1. Go [here](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "PHP function call") for info on how to use Twitter Stream in your template.
 
 == Frequently Asked Questions ==
@@ -72,6 +73,12 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
 == Changelog ==
+
+= 2.0.1 =
+* Removed oAuth until key exchange system does not make keys public...
+
+= 2.0 =
+* Version number change
 
 = 2.0-beta =
 * Changed authentication system to oAuth & made general improvements to the entire code.

@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.0
+Version: 2.0.1
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -24,26 +24,27 @@ Author URI: http://return-true.com
 */
 
 //Setup oAuth data such as Twitter Streams Consumer Key etc.
-define('CONSUMER_KEY', 'UHTAL4tvAv34emIm5dQ');
-define('CONSUMER_SECRET', 'V1QdHD3o5VvmbHQTJMFIgwawtQxvtxYLoC46ftZRls');
-define('OAUTH_CALLBACK', 'http://' . $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback');
+//define('CONSUMER_KEY', 'NOATAREALKEY');
+//define('CONSUMER_SECRET', 'NOTAREALSECRETEITHER');
+//define('OAUTH_CALLBACK', 'http://' . $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback');
 
 //include TwitteroAuthFile
-require_once('twitteroauth/twitteroauth.php');
+//require_once('twitteroauth/twitteroauth.php');
 
 //If we are authenticating execute the redirection to Twitter...
-if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
-	require_once('redirect.php'); //Load redirect to auth
-} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'callback') {
-	require_once('callback.php'); //Load callback to create tokens
-}
+//if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
+//	require_once('redirect.php'); //Load redirect to auth
+//} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'callback') {
+//	require_once('callback.php'); //Load callback to create tokens
+//}
 
 //Add our new page so users can authorize the plugin with Twitter... Yes, a page for 1 button...
-add_action('admin_menu', 'twitter_stream_add_options');
+//add_action('admin_menu', 'twitter_stream_add_options');
 //add our page to the settings sub menu
-function twitter_stream_add_options() {
-	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');	
-}
+//function twitter_stream_add_options() {
+//	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');	
+//}
+
 //Create the page...
 function twitter_stream_options_page() {
 ?>
@@ -172,13 +173,14 @@ function twitter_stream($args = FALSE) {
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
 	if(!isset($content)) {
 		/* Get user access tokens out of the session. */
-		$access_token = get_option('twitter_stream_token');
-		if(empty($access_token) || $access_token === FALSE) {
-			_e('You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before I can show your tweets');
-		}
+		//$access_token = get_option('twitter_stream_token');
+		//if(empty($access_token) || $access_token === FALSE) {
+		//	_e('You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before I can show your tweets');
+		//}
 		/* Create a TwitterOauth object with consumer/user tokens. */
-		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
-		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
+		//$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
+		//$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
+		$content = twitter_stream_connect('http://api.twitter.com/1/statuses/user_timeline.xml?screen_name='.$r['username'].'&count='.$r['count'].'&include_rts='.$r['retweets'], false);
 	}
 	
 	if($cache === FALSE) {
@@ -280,6 +282,92 @@ function twitter_stream_parse_tweets($content, $r) {
 	return array($o,$followers);
 
 }
+
+function twitter_stream_connect($twitter_url, $auth = FALSE) {
+	
+	if($auth === FALSE) {
+		unset($auth);
+	}
+
+	$method = 'curl';
+	if(!function_exists('curl_init')) {
+		$method = 'fopen';
+		//if CURL isn't installed assume fopen has URL access enabled, then check.
+	}
+	if(ini_get('allow_url_fopen') == '0') {
+		$method = 'socket';
+		//as fopen doesn't have URL access enabled drop back to custom socket access. See function twit_getRemoteFile()
+	}
+
+	if($method == 'curl') {
+			
+		//initialize a new curl resource
+		$ch = curl_init();	
+		//Fetch the timeline
+		curl_setopt($ch, CURLOPT_URL, $twitter_url);
+		//do it via GET
+		curl_setopt($ch, CURLOPT_GET, 1);
+		//For Debug purposes turn this to 1, delete cache & echo the contents before parsed by SimpleXML.
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		if(isset($auth)) {
+			//Authentication
+			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+			//Set user and pass
+			curl_setopt($ch, CURLOPT_USERPWD, "{$auth['username']}:{$auth['password']}");
+		}
+		//Live on the edge & trust Twitters SSL Certificate
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		//Give me the data back as a string... Don't echo it.
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		//Warp 9, Engage!
+		$content = curl_exec($ch);
+		//Close CURL connection & free the used memory.
+		curl_close($ch); 
+		
+		//Check for failure. If cURL failed report to the user.
+		if($content === FALSE) {
+			echo '<p>';
+			_e('cURL failed to retrieve any results.', 'twit_stream');
+			echo '</p>';
+			return FALSE;
+		}
+	
+	} elseif($method == 'fopen') {
+		
+		if(isset($auth)) {
+		
+			$ctx = stream_context_create(array(
+    											'http' => array(
+        										'header'  => "Authorization: Basic " . base64_encode("{$auth['username']}:{$auth['password']}")
+    													)
+												)
+						);
+		}
+		//Now let's get the twitter stream
+		$content = file_get_contents($twitter_url, FALSE, $ctx);
+		
+		//Check for failure. If fopen failed report to the user.
+		if($content === FALSE) {
+			echo '<p>';
+			_e('fopen failed to retrieve any results.', 'twit_stream');
+			echo '</p>';
+			return FALSE;
+		}
+	
+	} elseif($method == 'socket') {
+		
+		if(!isset($auth)) {
+			$auth = FALSE;	
+		}
+		
+		//Run the custom socket function to get the twitter stream
+		$content = twitter_stream_getRemoteFile($twitter_url, $auth);
+	
+	}
+	
+	return $content;
+}
+
 
 
 function twitter_stream_convert_to_xml($content) {
