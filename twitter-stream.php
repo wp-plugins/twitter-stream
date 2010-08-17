@@ -305,8 +305,6 @@ function twitter_stream_connect($twitter_url, $auth = FALSE) {
 		$ch = curl_init();	
 		//Fetch the timeline
 		curl_setopt($ch, CURLOPT_URL, $twitter_url);
-		//do it via GET
-		curl_setopt($ch, CURLOPT_GET, 1);
 		//For Debug purposes turn this to 1, delete cache & echo the contents before parsed by SimpleXML.
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		if(isset($auth)) {
