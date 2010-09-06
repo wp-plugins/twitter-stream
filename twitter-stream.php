@@ -77,6 +77,14 @@ function twitter_stream_options_page() {
 			</strong></p>
 		</div>
 	<?php
+	} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'cachefailed') {
+	?>
+		<div id="message" class="error fade">
+			<p><strong>
+				<?php _e('Cache Deletion Failed!', 'twit_stream' ); ?>
+			</strong></p>
+		</div>
+	<?php
 	}
 	?>
 	<div style="width: 500px; margin-top:10px;">
@@ -133,12 +141,12 @@ function twitter_stream_options_page() {
 		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://twitter.com">Twitter</a>, login, then go to <strong>settings->connections</strong>. Find the name of the application you created when authorizing Twitter Stream and press 'Revoke Access'. Remember that doing this will obviously stop Twitter Stream from working.</p>
 		<h3>I Need To Change My Keys!</h3>
 		<p>If you ever need to change your consumer keys for whatever reason click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
-		<h3>How Do I delete The Cache?</h3>
-		<p>Use the small button below to delete the cache. Use this if there is an error message displaying instead of your Tweets.</p>
-		<a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletecache'; ?>" style="display:block;width:95px;text-decoration:none;border:line-height:15px;margin:1px;padding:3px;font-size:11px;-moz-border-radius:4px 4px 4px 4px;-webkit-border-radius:4px 4px 4px 4px;border-radius:4px 4px 4px 4px;border-style:solid;border-width:1px;background-color:#fff0f5;border-color:#BBBBBB;color:#464646;text-align:center;">Delete Cache?</a>
 	<?php
 	}
 	?>
+	<h3>How Do I delete The Cache?</h3>
+	<p>Use the small button below to delete the cache. Use this if there is an error message displaying instead of your Tweets.</p>
+	<a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletecache'; ?>" style="display:block;width:95px;text-decoration:none;border:line-height:15px;margin:1px;padding:3px;font-size:11px;-moz-border-radius:4px 4px 4px 4px;-webkit-border-radius:4px 4px 4px 4px;border-radius:4px 4px 4px 4px;border-style:solid;border-width:1px;background-color:#fff0f5;border-color:#BBBBBB;color:#464646;text-align:center;">Delete Cache?</a>
 	<p><small>Huge thanks to <a href="http://twitteroauth.labs.poseurtech.com/">Abraham Williams</a> for creating TwitterOAuth which is used to connect Twitter Stream to Twitter via oAuth.</small></p>
 </div>
 <?php
@@ -315,13 +323,18 @@ function twitter_stream_delete_cache() {
 		while (false !== ($file = readdir($handle))) {
 			if(FALSE !== stristr($file, '.cache')) {
 				unlink($cache_path.'/'.$file);
+				$deleted = true;
+				break;
 			}
 		}
 		
 		closedir($handle);
 	}
-
-	header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=cachedeleted');
+	if($deleted === true) {
+		header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=cachedeleted');
+	} else {
+		header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=cachefailed');
+	}
 	
 }
 
