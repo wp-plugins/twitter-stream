@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.1.1
+Version: 2.1.2
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -115,7 +115,7 @@ function twitter_stream_options_page() {
 			<li><strong>App Name &amp; Description:</strong> Any name to identify your blog (e.g. My Stream), it cannot contain the word 'Twitter'. You don't have to fill in description.</li>
 			<li><strong>Website:</strong> Generally the URL to the home page of your blog.</li>
 			<li><strong>App Type:</strong> You <strong style="color:#aa0000;">Must</strong> select browser. This is extremely important.</li>
-			<li><strong>Callback URL:</strong> Leave this empty.</li>
+			<li><strong>Callback URL:</strong> Enter the following: <strong>http://<?php echo $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback'; ?></strong></li>
 			<li><strong>Access Type:</strong> Select <strong style="color:#aa0000;">read-only</strong> as Twitter Stream doesn't need write access.</li>
 			<li><strong>Use Twitter for Login:</strong> You <strong style="color:#aa0000;">Must</strong> tick this or Twitter Stream will <strong style="color:#aa0000;">not</strong> work.</li>
 		</ul>
