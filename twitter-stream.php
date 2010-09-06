@@ -86,9 +86,9 @@ function twitter_stream_options_page() {
    				<p>If you like this plugin and have found it to be useful, please help me keep this plugin free by clicking the <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9155415" target="_blank"><strong>donate</strong></a> button, or you can send me a gift from my <a href="https://www.amazon.co.uk/registry/wishlist/3IACY9WPVEPXC/ref=wl_web" target="_blank"><strong>Amazon wishlist</strong></a>. Thank you.</p>
 				</div>
 			<div style="width:100px; float:left; margin:15px 0 0 10px;">
-				<a target="_blank" title="Donate" href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9155415"><img src="<?php echo WP_PLUGIN_URL; ?>/the-attached-image/donate-paypal.jpg" alt="Donate with Paypal">	</a>
+				<a target="_blank" title="Donate" href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9155415"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/donate-paypal.jpg" alt="Donate with Paypal">	</a>
 				<a target="_blank" title="Amazon Wish List" href="https://www.amazon.co.uk/registry/wishlist/3IACY9WPVEPXC/ref=wl_web">
-				<img src="<?php echo WP_PLUGIN_URL; ?>/the-attached-image/amazon-wishlist.jpg" alt="My Amazon Wish List"> </a>
+				<img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/amazon-wishlist.jpg" alt="My Amazon Wish List"> </a>
 			</div>
 			<div style="clear:both;"></div>
 		</div>
