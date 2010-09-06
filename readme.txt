@@ -4,13 +4,13 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 3.0.1
-Stable tag: 2.1
+Stable tag: 2.1.1
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
 
-oAuth is now up and running in version 2.1.
+**IMPORTANT** due to an oversight on Twitters part all features that require oAuth are suspended until Twitter figure out a way to authenticate plugins without making your API keys public... **Do Not Worry** the plugin should work as normal showing tweets, retweets etc. The only thing that will not work is if your twitter account is private as it cannot log in to authenticate you.
 
 Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API. You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
@@ -71,6 +71,9 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/2009/12/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
 == Changelog ==
+
+= 2.1.1 =
+* Correct an annoying SVN problem now have to create new version number to force update in WP admin for users of plugin.
 
 = 2.1 =
 * Reintroduced oAuth using user application registration method for consumer keys...
