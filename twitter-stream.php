@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.1.2
+Version: 2.1.3
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -260,7 +260,6 @@ function twitter_stream($args = FALSE) {
 		/* Create a TwitterOauth object with consumer/user tokens. */
 		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
 		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
-		$content = twitter_stream_connect('http://api.twitter.com/1/statuses/user_timeline.xml?screen_name='.$r['username'].'&count='.$r['count'].'&include_rts='.$r['retweets'], false);
 	}
 	
 	if($cache === FALSE) {
@@ -386,90 +385,6 @@ function twitter_stream_parse_tweets($content, $r) {
 	return array($o,$followers);
 
 }
-
-function twitter_stream_connect($twitter_url, $auth = FALSE) {
-	
-	if($auth === FALSE) {
-		unset($auth);
-	}
-
-	$method = 'curl';
-	if(!function_exists('curl_init')) {
-		$method = 'fopen';
-		//if CURL isn't installed assume fopen has URL access enabled, then check.
-	}
-	if(ini_get('allow_url_fopen') == '0') {
-		$method = 'socket';
-		//as fopen doesn't have URL access enabled drop back to custom socket access. See function twit_getRemoteFile()
-	}
-
-	if($method == 'curl') {
-			
-		//initialize a new curl resource
-		$ch = curl_init();	
-		//Fetch the timeline
-		curl_setopt($ch, CURLOPT_URL, $twitter_url);
-		//For Debug purposes turn this to 1, delete cache & echo the contents before parsed by SimpleXML.
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		if(isset($auth)) {
-			//Authentication
-			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-			//Set user and pass
-			curl_setopt($ch, CURLOPT_USERPWD, "{$auth['username']}:{$auth['password']}");
-		}
-		//Live on the edge & trust Twitters SSL Certificate
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-		//Give me the data back as a string... Don't echo it.
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-		//Warp 9, Engage!
-		$content = curl_exec($ch);
-		//Close CURL connection & free the used memory.
-		curl_close($ch); 
-		
-		//Check for failure. If cURL failed report to the user.
-		if($content === FALSE) {
-			echo '<p>';
-			_e('cURL failed to retrieve any results.', 'twit_stream');
-			echo '</p>';
-			return FALSE;
-		}
-	
-	} elseif($method == 'fopen') {
-		
-		if(isset($auth)) {
-		
-			$ctx = stream_context_create(array(
-    											'http' => array(
-        										'header'  => "Authorization: Basic " . base64_encode("{$auth['username']}:{$auth['password']}")
-    													)
-												)
-						);
-		}
-		//Now let's get the twitter stream
-		$content = file_get_contents($twitter_url, FALSE, $ctx);
-		
-		//Check for failure. If fopen failed report to the user.
-		if($content === FALSE) {
-			echo '<p>';
-			_e('fopen failed to retrieve any results.', 'twit_stream');
-			echo '</p>';
-			return FALSE;
-		}
-	
-	} elseif($method == 'socket') {
-		
-		if(!isset($auth)) {
-			$auth = FALSE;	
-		}
-		
-		//Run the custom socket function to get the twitter stream
-		$content = twitter_stream_getRemoteFile($twitter_url, $auth);
-	
-	}
-	
-	return $content;
-}
-
 
 
 function twitter_stream_convert_to_xml($content) {

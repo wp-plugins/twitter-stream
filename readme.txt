@@ -4,7 +4,7 @@ Donate link: http://return-true.com/donations/
 Tags: twitter
 Requires at least: 2.8
 Tested up to: 3.0.1
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
@@ -72,8 +72,11 @@ To make it easier for me to answer questions & to keep everything in one place, 
 
 == Changelog ==
 
-= 2.1.1 =
-* Fix problem that makes oAuth refuse connection with 401
+= 2.1.3 =
+* Fixed extremely stupid mistake whiched stop oAuth from becoming active.
+
+= 2.1.2 =
+* Fixed problem that makes oAuth refuse connection with 401
 
 = 2.1.1 =
 * Correct an annoying SVN problem now have to create new version number to force update in WP admin for users of plugin.
