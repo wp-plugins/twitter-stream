@@ -10,7 +10,7 @@ Twitter Stream is a very simple Twitter plugin designed to show a users Twitter 
 
 == Description ==
 
-**IMPORTANT** due to an oversight on Twitters part all features that require oAuth are suspended until Twitter figure out a way to authenticate plugins without making your API keys public... **Do Not Worry** the plugin should work as normal showing tweets, retweets etc. The only thing that will not work is if your twitter account is private as it cannot log in to authenticate you.
+oAuth is now up and running in version 2.1.
 
 Twitter Stream is a simple plugin designed to simply show a users Twitter timeline. It includes file caching to stop overuse of Twitter's API. You can also choose how many updates to return (maximum of 200). It also includes autolinking for URL's found within the timeline. Also includes a date ago feature, showing the time the tweet was posted in xx ago format. Also has a permalink pointing to the tweet.
 
