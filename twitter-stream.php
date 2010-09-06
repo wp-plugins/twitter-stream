@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.0.1
+Version: 2.1
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -24,26 +24,42 @@ Author URI: http://return-true.com
 */
 
 //Setup oAuth data such as Twitter Streams Consumer Key etc.
-//define('CONSUMER_KEY', 'NOATAREALKEY');
-//define('CONSUMER_SECRET', 'NOTAREALSECRETEITHER');
-//define('OAUTH_CALLBACK', 'http://' . $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback');
+if($keys = get_option('twitter_stream_keys')) {
+	define('CONSUMER_KEY', $keys['consumer_key']);
+	define('CONSUMER_SECRET', $keys['consumer_secret']);
+	define('OAUTH_CALLBACK', 'http://' . $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback');
+}
 
 //include TwitteroAuthFile
-//require_once('twitteroauth/twitteroauth.php');
+require_once('twitteroauth/twitteroauth.php');
 
 //If we are authenticating execute the redirection to Twitter...
-//if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
-//	require_once('redirect.php'); //Load redirect to auth
-//} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'callback') {
-//	require_once('callback.php'); //Load callback to create tokens
-//}
+if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
+	require_once('redirect.php'); //Load redirect to auth
+} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'callback') {
+	require_once('callback.php'); //Load callback to create tokens
+} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'deletekeys') {
+	delete_option('twitter_stream_keys');
+	//Delete oAuth token if it is set too.
+	delete_option('twitter_stream_token');
+	//redirect user to the entry page to enter new keys
+	header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']));
+} elseif(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'deletecache') {
+	//run cache deletion function
+	twitter_stream_delete_cache();
+} elseif(isset($_POST['consumerkey']) && isset($_POST['consumersecret'])) {
+	//check if keys have been sent via POST & save them here.
+	update_option('twitter_stream_keys', array('consumer_key' => $_POST['consumerkey'], 'consumer_secret' => $_POST['consumersecret']));
+	//redirect user to this page now that the keys have been saved. Remove the extra url param or we will endless loop.
+	header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']));
+}
 
 //Add our new page so users can authorize the plugin with Twitter... Yes, a page for 1 button...
-//add_action('admin_menu', 'twitter_stream_add_options');
+add_action('admin_menu', 'twitter_stream_add_options');
 //add our page to the settings sub menu
-//function twitter_stream_add_options() {
-//	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');	
-//}
+function twitter_stream_add_options() {
+	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');	
+}
 
 //Create the page...
 function twitter_stream_options_page() {
@@ -53,17 +69,73 @@ function twitter_stream_options_page() {
    	Created by <strong>Paul Robinson</strong>.
 	<small style="margin-bottom: 25px; display: block;">Confused? Unsure what to do? Check the <a href="http://return-true.com/2009/12/wordpress-plugin-twitter-stream/">documentation</a></small>
 	<?php
+	if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'cachedeleted') {
+	?>
+		<div id="message" class="updated fade">
+			<p><strong>
+				<?php _e('Cache Deleted!', 'twit_stream' ); ?>
+			</strong></p>
+		</div>
+	<?php
+	}
+	?>
+	<div style="width: 500px; margin-top:10px;">
+    	<div style="border: 1px solid rgb(221, 221, 221); padding: 10px; float: left; background-color: white; margin-right: 15px;">
+    		<div style="width: 350px; height: 130px; float:left;">
+        		<h3>Donate</h3>
+   				<p>If you like this plugin and have found it to be useful, please help me keep this plugin free by clicking the <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9155415" target="_blank"><strong>donate</strong></a> button, or you can send me a gift from my <a href="https://www.amazon.co.uk/registry/wishlist/3IACY9WPVEPXC/ref=wl_web" target="_blank"><strong>Amazon wishlist</strong></a>. Thank you.</p>
+				</div>
+			<div style="width:100px; float:left; margin:15px 0 0 10px;">
+				<a target="_blank" title="Donate" href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9155415"><img src="<?php echo WP_PLUGIN_URL; ?>/the-attached-image/donate-paypal.jpg" alt="Donate with Paypal">	</a>
+				<a target="_blank" title="Amazon Wish List" href="https://www.amazon.co.uk/registry/wishlist/3IACY9WPVEPXC/ref=wl_web">
+				<img src="<?php echo WP_PLUGIN_URL; ?>/the-attached-image/amazon-wishlist.jpg" alt="My Amazon Wish List"> </a>
+			</div>
+			<div style="clear:both;"></div>
+		</div>
+    </div>
+    <div style="clear: both;"></div>
+	<?php
 	//Have we already been authorized?
 	$token = get_option('twitter_stream_token');
-	if(!is_array($token) && !isset($token['oauth_token'])) {
+	if(!defined('CONSUMER_KEY') && !defined('CONSUMER_SECRET')) {
 	?>
-		<p>Due to the discontinuation of basic authentication by Twitter you now have to authenticate Twitter Stream with your Twitter account. This just means you must give Twitter Stream <strong>Read-Only</strong> permission to access your tweets. To do this click the 'Sign in with Twitter' button just below and follow the instructions. You may notice the name given for the application is 'Twit Stream' instead of 'Twitter Stream'. This is because Twitter do not allow applications to be registered with Twitter in their name... Slightly annoying, but very true.</p>
-		<div style="margin: 15px 0 0 0;"><a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=redirect'; ?>"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/darker.png" alt="Sign in with Twitter"/></a></div>
+		<p style="font-weight:bold; color:#666;">This is entirely optional, but if you are on a shared server it is highly recommended as you will probably hit the API limit quickly without logging in to Twitter via oAuth.</p>
+		<h3>Create A Twitter App</h3>
+		<p>To sign into Twitter via Twitter Stream you will need to register for a Twitter App. The process is fairly quick and can be done by clicking the 'Get your consumer keys' button below (opens in new window/tab), please read the following to find out what to enter.</p>
+		<div style="margin: 15px 0 15px 0;"><a href="http://twitter.com/apps/new/" target="_blank"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/twitter-oauth-button.png" alt="Get your consumer keys"/></a></div>
+		<ul>
+			<li><strong>App Name &amp; Description:</strong> Any name to identify your blog (e.g. My Stream), it cannot contain the word 'Twitter'. You don't have to fill in description.</li>
+			<li><strong>Website:</strong> Generally the URL to the home page of your blog.</li>
+			<li><strong>App Type:</strong> You <strong style="color:#aa0000;">Must</strong> select browser. This is extremely important.</li>
+			<li><strong>Callback URL:</strong> Leave this empty.</li>
+			<li><strong>Access Type:</strong> Select <strong style="color:#aa0000;">read-only</strong> as Twitter Stream doesn't need write access.</li>
+			<li><strong>Use Twitter for Login:</strong> You <strong style="color:#aa0000;">Must</strong> tick this or Twitter Stream will <strong style="color:#aa0000;">not</strong> work.</li>
+		</ul>
+		<p>Once you have completed the registration you will be given two very important keys <em style="color: #666;">(Consumer Key &amp; Consumer Secret)</em> please enter them in the boxes below &amp; hit save.</p>
+		<h3>Enter Key Information</h3>
+		<form action="<?php echo str_replace( '%7E', '~', $_SERVER['REQUEST_URI']); ?>" method="post">
+			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">Consumer Key:</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
+			<label for="consumersecret" style="font-weight:bold;display:block;width:150px;margin-top:5px;">Consumer Secret:</label> <input type="text" value="" id="consumersecret" name="consumersecret" />
+			<input type="submit" value="Save" style="display:block;margin-top:10px;" />
+		</form>
+	<?php
+	} elseif(!is_array($token) && !isset($token['oauth_token'])) {
+	?>
+		<h3>Sign In With Twitter</h3>
+		<p>Now you have registered an Twitter App and the keys have been saved, we can now sign you into Twitter &amp; finally get Twitter Stream up and running. To sign in simply click the 'sign in with Twitter' button below, check the details on the page that follows match that of the Twitter App you created, and finally press the 'allow' button.</p>
+		<div style="margin: 15px 0 15px 0;"><a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=redirect'; ?>"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/darker.png" alt="Sign in with Twitter"/></a></div>
+		<h3>What If I Made A Mistake Entering The Keys?</h3>
+		<p>If you made a mistake entering the keys please click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
 	<?php
 	} else {
 	?>
-		<p>You have authorized Twitter Stream. Great job. ;)</p>
-		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://twitter.com">Twitter</a>, login, then go to <strong>settings->connections</strong>. Find 'Twit Stream' and press 'Revoke Access'. Remember that doing this will obviously stop Twitter Stream from working.</p>
+		<h3>Twitter Stream Authorized!</h3>
+		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://twitter.com">Twitter</a>, login, then go to <strong>settings->connections</strong>. Find the name of the application you created when authorizing Twitter Stream and press 'Revoke Access'. Remember that doing this will obviously stop Twitter Stream from working.</p>
+		<h3>I Need To Change My Keys!</h3>
+		<p>If you ever need to change your consumer keys for whatever reason click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
+		<h3>How Do I delete The Cache?</h3>
+		<p>Use the small button below to delete the cache. Use this if there is an error message displaying instead of your Tweets.</p>
+		<a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletecache'; ?>" style="display:block;width:95px;text-decoration:none;border:line-height:15px;margin:1px;padding:3px;font-size:11px;-moz-border-radius:4px 4px 4px 4px;-webkit-border-radius:4px 4px 4px 4px;border-radius:4px 4px 4px 4px;border-style:solid;border-width:1px;background-color:#fff0f5;border-color:#BBBBBB;color:#464646;text-align:center;">Delete Cache?</a>
 	<?php
 	}
 	?>
@@ -102,11 +174,11 @@ function twitter_stream_show_notice() {
 		echo '</strong></p></div>';
 }
 
-//Shell for new array/query string argument system... Redundant since intro of oAuth...
+//Shell for new array/query string argument system... Redundant since intro of oAuth... Kept as alias...
 function twitter_stream_args($args) {
 	twitter_stream($args);
 }
-//Old system, kept for backwards compat...
+
 function twitter_stream($args = FALSE) {
 
 	if(is_array($args)) { //Is it an array?
@@ -173,13 +245,13 @@ function twitter_stream($args = FALSE) {
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
 	if(!isset($content)) {
 		/* Get user access tokens out of the session. */
-		//$access_token = get_option('twitter_stream_token');
-		//if(empty($access_token) || $access_token === FALSE) {
-		//	_e('You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before I can show your tweets');
-		//}
+		$access_token = get_option('twitter_stream_token');
+		if(empty($access_token) || $access_token === FALSE) {
+			_e('You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before I can show your tweets');
+		}
 		/* Create a TwitterOauth object with consumer/user tokens. */
-		//$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
-		//$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
+		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
+		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
 		$content = twitter_stream_connect('http://api.twitter.com/1/statuses/user_timeline.xml?screen_name='.$r['username'].'&count='.$r['count'].'&include_rts='.$r['retweets'], false);
 	}
 	
@@ -231,6 +303,25 @@ function twitter_stream_cache($modtime, $cache_path) {
 	if($data !== FALSE) {
 		return $data; //return our data if there wasn't a problem
 	}
+	
+}
+
+function twitter_stream_delete_cache() {
+
+	$cache_path = dirname(__FILE__);
+	
+	if ($handle = opendir($cache_path)) {
+			
+		while (false !== ($file = readdir($handle))) {
+			if(FALSE !== stristr($file, '.cache')) {
+				unlink($cache_path.'/'.$file);
+			}
+		}
+		
+		closedir($handle);
+	}
+
+	header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=cachedeleted');
 	
 }
 
