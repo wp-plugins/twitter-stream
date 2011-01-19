@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: twitter-stream\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 12:06-0000\n"
+"POT-Creation-Date: 2011-01-19 17:21-0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Paul Robinson <pablorobinson@gmail.com>\n"
 "Language-Team: \n"
@@ -13,195 +13,147 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: twitter-stream.php:52
-#: twitter-stream_old.php:51
+#: twitter-stream.php:68
+msgid "Twitter Stream Authorize Page"
+msgstr ""
+
+#: twitter-stream.php:76
+msgid "Cache Deleted!"
+msgstr ""
+
+#: twitter-stream.php:84
+msgid "Cache Deletion Failed!"
+msgstr ""
+
+#: twitter-stream.php:183
 msgid "You appear to be using a version of PHP lower than version 5. As noted in the description this plugin uses SimpleXML which was not available in PHP 4. Please either contact your host &amp; ask for your version of PHP to be upgraded or uninstall this plugin and consider an alternative. Sorry for the inconvenience."
 msgstr ""
 
-#: twitter-stream.php:100
-#: twitter-stream_old.php:89
+#: twitter-stream.php:219
 msgid "You must have PHP5 or higher for this plugin to work."
 msgstr ""
 
-#: twitter-stream.php:104
-#: twitter-stream_old.php:93
-msgid "You must provide a username"
+#: twitter-stream.php:256
+msgid "Authorizing Twitter Stream with Twitter is no longer optional. You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before your tweets can be shown."
 msgstr ""
 
-#: twitter-stream.php:175
-msgid "Ooop! Twitter seems to be down. Please either delete the cache file using FTP or wait until it auto clears."
-msgstr ""
-
-#: twitter-stream.php:346
-#: twitter-stream_old.php:286
-msgid "cURL failed to retrieve any results."
-msgstr ""
-
-#: twitter-stream.php:368
-#: twitter-stream_old.php:308
-msgid "fopen failed to retrieve any results."
-msgstr ""
-
-#: twitter-stream.php:397
-#: twitter-stream_old.php:145
+#: twitter-stream.php:399
 msgid "Your Twitter stream could not be collected. Normally this is caused by no XML feed being returned. Why this happens is still unclear."
 msgstr ""
 
-#: twitter-stream.php:445
-#: twitter-stream_old.php:361
-msgid "Unable to open a fsocketopen connection to Twitter."
-msgstr ""
-
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "second"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "minute"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "hour"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "day"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "week"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "month"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "year"
 msgstr ""
 
-#: twitter-stream.php:481
-#: twitter-stream_old.php:397
+#: twitter-stream.php:416
 msgid "decade"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "seconds"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "minutes"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "hours"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "days"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "weeks"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "months"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "years"
 msgstr ""
 
-#: twitter-stream.php:482
-#: twitter-stream_old.php:398
+#: twitter-stream.php:417
 msgid "decades"
 msgstr ""
 
-#: twitter-stream.php:488
-#: twitter-stream_old.php:404
+#: twitter-stream.php:423
 msgid "ago"
 msgstr ""
 
-#: twitter-stream.php:563
-#: twitter-stream_old.php:472
+#: twitter-stream.php:502
 msgid "Title:"
 msgstr ""
 
-#: twitter-stream.php:569
-#: twitter-stream_old.php:478
-msgid "Twitter Username:"
-msgstr ""
-
-#: twitter-stream.php:574
-#: twitter-stream_old.php:483
-msgid "Twitter Password:"
-msgstr ""
-
-#: twitter-stream.php:577
-msgid "(Only needed if your tweets are protected or you have overstepped the API limit.)"
-msgstr ""
-
-#: twitter-stream.php:584
-#: twitter-stream_old.php:493
+#: twitter-stream.php:508
 msgid "How Many Twitter Updates To Show:"
 msgstr ""
 
-#: twitter-stream.php:590
-#: twitter-stream_old.php:499
+#: twitter-stream.php:514
 msgid "Show The Date:"
 msgstr ""
 
-#: twitter-stream.php:593
-#: twitter-stream_old.php:502
+#: twitter-stream.php:517
 msgid "(Leave blank to turn off, type a separator, true or 1 will show the date)"
 msgstr ""
 
-#: twitter-stream.php:600
-#: twitter-stream_old.php:509
+#: twitter-stream.php:524
 msgid "Profile Link Text:"
 msgstr ""
 
-#: twitter-stream.php:603
-#: twitter-stream_old.php:512
+#: twitter-stream.php:527
 msgid "(What the link to your Twitter profile should say)"
 msgstr ""
 
-#: twitter-stream.php:610
+#: twitter-stream.php:534
 msgid "Show Retweets:"
 msgstr ""
 
-#: twitter-stream.php:613
+#: twitter-stream.php:537
 msgid "(Warning: Uses 2 API requests.)"
 msgstr ""
 
-#: twitter-stream.php:620
+#: twitter-stream.php:544
 msgid "Show Followers:"
 msgstr ""
 
-#: twitter-stream.php:623
+#: twitter-stream.php:547
 msgid "(Shows your follower count.)"
 msgstr ""
 
-#: twitter-stream_old.php:157
-msgid "No user information was returned. This normally happens when you have used an incorrect or invalid username."
+#: twitter-stream.php:554
+msgid "Cache Length:"
 msgstr ""
 
-#: twitter-stream_old.php:486
-msgid "(Only needed if your tweets are protected or you have oversteped the API limit.)"
+#: twitter-stream.php:557
+msgid "How long to cache tweets, in seconds."
 msgstr ""
 

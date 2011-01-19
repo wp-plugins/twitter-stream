@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.1.4
+Version: 2.1.5
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -11,7 +11,7 @@ Author URI: http://return-true.com
 	Twitter Stream is released under the GNU General Public License (GPL)
 	http://www.gnu.org/licenses/gpl.txt
 
-	This is a WordPress 2 plugin (http://wordpress.org).
+	This is a WordPress 3 plugin (http://wordpress.org).
 	Plugin is well documented for those who wish to learn.
 */
 
@@ -107,7 +107,7 @@ function twitter_stream_options_page() {
 	$token = get_option('twitter_stream_token');
 	if(!defined('CONSUMER_KEY') && !defined('CONSUMER_SECRET')) {
 	?>
-		<p style="font-weight:bold; color:#666;">This is entirely optional, but if you are on a shared server it is highly recommended as you will probably hit the API limit quickly without logging in to Twitter via oAuth.</p>
+		<p style="font-weight:bold; color:#666;">oAuth is no longer optional. Due to changes to the Twitter API you must authorize Twitter Stream with your Twitter account by following the instructions below.</p>
 		<h3>Create A Twitter App</h3>
 		<p>To sign into Twitter via Twitter Stream you will need to register for a Twitter App. The process is fairly quick and can be done by clicking the 'Get your consumer keys' button below (opens in new window/tab), please read the following to find out what to enter.</p>
 		<div style="margin: 15px 0 15px 0;"><a href="http://twitter.com/apps/new/" target="_blank"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/twitter-oauth-button.png" alt="Get your consumer keys"/></a></div>
@@ -139,13 +139,15 @@ function twitter_stream_options_page() {
 	?>
 		<h3>Twitter Stream Authorized!</h3>
 		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://twitter.com">Twitter</a>, login, then go to <strong>settings->connections</strong>. Find the name of the application you created when authorizing Twitter Stream and press 'Revoke Access'. Remember that doing this will obviously stop Twitter Stream from working.</p>
+		<h3>What Do I Do Now?</h3>
+		<p>The easiest way to use Twitter Stream is to add it via the widgets. Just go to the widgets page and add the Twitter Stream widget to one of your widget areas. The alternative is to use the function by including &lt;php twitter_stream(); ?&gt; in your template somewhere. You can customize it using the parameters shown <a href="http://return-true.com/2009/12/wordpress-plugin-twitter-stream/">here</a>.
 		<h3>I Need To Change My Keys!</h3>
 		<p>If you ever need to change your consumer keys for whatever reason click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
 	<?php
 	}
 	?>
 	<h3>How Do I delete The Cache?</h3>
-	<p>Use the small button below to delete the cache. Use this if there is an error message displaying instead of your Tweets.</p>
+	<p>Use the small button below to delete the cache. Use this if there is an error message displaying instead of your Tweets or if you have changed your widget/template function settings.</p>
 	<a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletecache'; ?>" style="display:block;width:95px;text-decoration:none;border:line-height:15px;margin:1px;padding:3px;font-size:11px;-moz-border-radius:4px 4px 4px 4px;-webkit-border-radius:4px 4px 4px 4px;border-radius:4px 4px 4px 4px;border-style:solid;border-width:1px;background-color:#fff0f5;border-color:#BBBBBB;color:#464646;text-align:center;">Delete Cache?</a>
 	<p><small>Huge thanks to <a href="http://twitteroauth.labs.poseurtech.com/">Abraham Williams</a> for creating TwitterOAuth which is used to connect Twitter Stream to Twitter via oAuth.</small></p>
 </div>
@@ -205,7 +207,8 @@ function twitter_stream($args = FALSE) {
 					'date' => FALSE,
 					'profile_link' => 'Visit My Profile',
 					'retweets' => 'FALSE',
-					'show_followers' => FALSE
+					'show_followers' => FALSE,
+					'cache_time' => 1800
 					);
 					
 	$r = array_merge($defaults, $r); //Merge our defaults array onto our options array to fill in any missing values with defaults.
@@ -217,19 +220,13 @@ function twitter_stream($args = FALSE) {
 		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
 	}
-	if(empty($r['username'])) {
-		_e('You must provide a username', 'twit_stream'); //Must have a username our it's pointless even trying to run.
-		return FALSE;
-	}
 	
 	$cache_path = dirname(__FILE__).'/'.$r['username'].'.cache'; //Set our cache path. Can be changed if you feel the need.
 	
-	//Caching is used to help prevent us from hitting the 150 per hour (20,000 if whilelisted) TwitterAPI request limit.
-	//Being on a shared server can negate the effects of caching, but it still helps you not get blacklisted.
 	//First we need to check to see if a cache file has already been made.
 	if(file_exists($cache_path)) {
 		$modtime = filemtime($cache_path); //Get the time the file was last modified.
-		$content = twitter_stream_cache($modtime, $cache_path); //Hand it to the cache function & get the data
+		$content = twitter_stream_cache($modtime, $cache_path, $r['cache_time']); //Hand it to the cache function & get the data
 		if($content !== FALSE) {
 			$cache = TRUE; //Cache is still valid
 		} else {
@@ -255,7 +252,8 @@ function twitter_stream($args = FALSE) {
 		/* Get user access tokens out of the session. */
 		$access_token = get_option('twitter_stream_token');
 		if(empty($access_token) || $access_token === FALSE) {
-			_e('You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before I can show your tweets');
+			_e('Authorizing Twitter Stream with Twitter is no longer optional. You need to go to the Twitter Stream Authorization page in the WordPress Admin (under settings) before your tweets can be shown.');
+			return FALSE;
 		}
 		/* Create a TwitterOauth object with consumer/user tokens. */
 		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
@@ -295,9 +293,9 @@ function twitter_stream($args = FALSE) {
 	
 }
 
-function twitter_stream_cache($modtime, $cache_path) {
+function twitter_stream_cache($modtime, $cache_path, $cache_time) {
 	
-	$thirtyago = time() - 1800; //the timestamp thirty minutes ago
+	$thirtyago = time() - $cache_time; //the timestamp thirty minutes ago
 	
 	if($modtime < $thirtyago) {
 		//our cache is older than 30 minutes return FALSE so the script will run the cache updater.
@@ -467,6 +465,8 @@ if(get_bloginfo('version') >= '2.8') {
 				$instance['retweets'] = FALSE;
 			if(empty($instance['show_followers']))
 				$instance['show_followers'] = FALSE;
+			if(empty($instance['cache_time']))
+				$instance['cache_time'] = 30;
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
@@ -495,6 +495,7 @@ if(get_bloginfo('version') >= '2.8') {
 			$profile_link = esc_attr($instance['profile_link']);
 			$retweets = esc_attr($instance['retweets']);
 			$show_followers = esc_attr($instance['show_followers']);
+			$cache_time = esc_attr($instance['cache_time']);
 			?>
 				<p>
                   <label for="<?php echo $this->get_field_id('title'); ?>">
@@ -502,9 +503,13 @@ if(get_bloginfo('version') >= '2.8') {
                     <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" />
                   </label>
                 </p>
-                <p>
+				<p>
                   <label for="<?php echo $this->get_field_id('username'); ?>">
 				    <?php _e('Twitter Username:', 'twit_stream'); ?>
+					<br />
+					<small>
+					  <?php _e('(Leave blank to show your tweets)', 'twit_stream'); ?>
+					</small>
                   <input class="widefat" id="<?php echo $this->get_field_id('username'); ?>" name="<?php echo $this->get_field_name('username'); ?>" type="text" value="<?php echo $username; ?>" /></label>
                 </p>
 				<p>
@@ -551,6 +556,16 @@ if(get_bloginfo('version') >= '2.8') {
 					  <?php _e('(Shows your follower count.)', 'twit_stream'); ?>
                     </small>
                     <input class="widefat" id="<?php echo $this->get_field_id('show_followers'); ?>" name="<?php echo $this->get_field_name('show_followers'); ?>" type="checkbox" <?php if($show_followers == TRUE) echo 'checked="checked"'; ?> />
+                  </label>
+                </p>
+				 <p>
+                  <label for="<?php echo $this->get_field_id('cache_time'); ?>">
+				    <?php _e('Cache Length:', 'twit_stream'); ?>
+                    <br />
+                    <small>
+					  <?php _e('How long to cache tweets, in seconds.', 'twit_stream'); ?>
+                    </small>
+                    <input class="widefat" id="<?php echo $this->get_field_id('cache_time'); ?>" name="<?php echo $this->get_field_name('cache_time'); ?>" type="text" value="<?php echo $cache_time; ?>" />
                   </label>
                 </p>
 			<?php 
