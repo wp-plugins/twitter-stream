@@ -72,6 +72,9 @@ To make it easier for me to answer questions & to keep everything in one place, 
 
 == Changelog ==
 
+= 2.1.7 =
+* Correct syntax error. Thanks Notepad++
+
 = 2.1.6 =
 * Check if OAuth is already available on server
 
