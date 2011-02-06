@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.1.8
+Version: 2.1.9
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -346,6 +346,7 @@ function twitter_stream_parse_tweets($content, $r) {
 		return FALSE;
 	}
 	$followers = $twitxml->status[0]->user->followers_count;
+	$username = $twitxml->status[0]->user->screen_name;
 	$o = '';
 	foreach($twitxml->status as $tweet) {
 	
@@ -373,7 +374,7 @@ function twitter_stream_parse_tweets($content, $r) {
 				$r['date'] = trim($r['date']);
 				$o .= " {$r['date']} ";	
 			}
-			$o .= "<a href=\"http://twitter.com/{$r['username']}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
+			$o .= "<a href=\"http://twitter.com/{$username}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
 		}
 				
 		$o .= "</p>";
