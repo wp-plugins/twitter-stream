@@ -72,6 +72,9 @@ To make it easier for me to answer questions & to keep everything in one place, 
 
 == Changelog ==
 
+= 2.2.2 =
+* Change chmod permission settings. I really wish all hosts would set up apache & PHP to work together in harmony.
+
 = 2.2.1 =
 * Added chmod for cache creation to try and fix permission denied problems on servers with different file permission setups.
 
