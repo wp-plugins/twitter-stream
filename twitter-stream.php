@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.2.2
+Version: 2.2.3
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -266,15 +266,12 @@ function twitter_stream($args = FALSE) {
 	
 	if($cache === FALSE) {
 		//If cache was set to false we need to update the cache;
-		//Fix to change write permissions...
-		chmod(dirname(__FILE__), 0777);
 		$fp = fopen($cache_path, 'w');
 		if(flock($fp, LOCK_EX)) {
 			fwrite($fp, $content);
 			flock($fp, LOCK_UN);	
 		}
 		fclose($fp);
-		chmod(dirname(__FILE__), 0755);
 	}
 	
 	$tweetfollow = twitter_stream_parse_tweets($content, $r);
