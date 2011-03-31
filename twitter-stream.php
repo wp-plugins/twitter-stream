@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.2.4
+Version: 2.2.5
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -290,7 +290,7 @@ function twitter_stream($args = FALSE) {
 	}
 	
 	//Link to users profile. Can be customized via the profile_link parameter & via CSS targeting.
-	$output .= '<div class="profile-link"><a href="http://twitter.com/'.$r['username'].'" title="'.$r['profile_link'].'">'.$r['profile_link'].'</a></div>';
+	$output .= '<div class="profile-link"><a href="http://twitter.com/'.$tweetfollow[2].'" title="'.$r['profile_link'].'">'.$r['profile_link'].'</a></div>';
 	
 	
 	echo '<div class="twitter-stream">'.$output.'</div>';
@@ -387,7 +387,7 @@ function twitter_stream_parse_tweets($content, $r) {
 			
 	}
 		
-	return array($o,$followers);
+	return array($o,$followers,$username);
 
 }
 
