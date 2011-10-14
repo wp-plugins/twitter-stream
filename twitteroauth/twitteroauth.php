@@ -7,9 +7,8 @@
  */
 
 /* Load OAuth lib. You can find it at http://oauth.net */
-if(!class_exists('OAuthException')) {
-	require_once('OAuth.php');
-}
+require_once('OAuth.php');
+
 /**
  * Twitter OAuth class
  */
@@ -27,7 +26,7 @@ class TwitterOAuth {
   /* Verify SSL Cert. */
   public $ssl_verifypeer = FALSE;
   /* Respons format. */
-  public $format = 'xml';
+  public $format = 'json';
   /* Decode returned json data. */
   public $decode_json = TRUE;
   /* Contains the last HTTP headers returned. */
@@ -43,10 +42,10 @@ class TwitterOAuth {
   /**
    * Set API URLS
    */
-  function accessTokenURL()  { return 'https://twitter.com/oauth/access_token'; }
-  function authenticateURL() { return 'https://twitter.com/oauth/authenticate'; }
-  function authorizeURL()    { return 'https://twitter.com/oauth/authorize'; }
-  function requestTokenURL() { return 'https://twitter.com/oauth/request_token'; }
+  function accessTokenURL()  { return 'https://api.twitter.com/oauth/access_token'; }
+  function authenticateURL() { return 'https://api.twitter.com/oauth/authenticate'; }
+  function authorizeURL()    { return 'https://api.twitter.com/oauth/authorize'; }
+  function requestTokenURL() { return 'https://api.twitter.com/oauth/request_token'; }
 
   /**
    * Debug helpers
@@ -227,7 +226,6 @@ class TwitterOAuth {
     $this->http_code = curl_getinfo($ci, CURLINFO_HTTP_CODE);
     $this->http_info = array_merge($this->http_info, curl_getinfo($ci));
     $this->url = $url;
-	$this->response_data = $response;
     curl_close ($ci);
     return $response;
   }
