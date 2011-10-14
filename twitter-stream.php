@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.3.1
+Version: 2.3.2
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -261,6 +261,7 @@ function twitter_stream($args = FALSE) {
 		}
 		/* Create a TwitterOauth object with consumer/user tokens. */
 		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
+		$connection->format = 'xml';
 		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
 	}
 	
