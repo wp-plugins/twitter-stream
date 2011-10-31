@@ -4,7 +4,7 @@ Donate link: http://return-true.com/donations/
 Tags: twitter, timeline, tweets
 Requires at least: 2.8
 Tested up to: 3.3
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
@@ -36,6 +36,7 @@ Here is a quick run down of the features available in Twitter Stream.
 1. Optional display of follower count.
 1. Retweets can now be shown.
 1. Cache time can be customized via the widget or template function.
+1. Tweets can be returned for manipulation via PHP.
 
 A big thank you to all the people who have translated Twitter Stream into different languages.
 
