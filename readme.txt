@@ -43,6 +43,9 @@ A big thank you to all the people who have translated Twitter Stream into differ
 1. [Fatcow](http://www.fatcow.com/)
 1. [Tolingo.com](http://tolingo.com)
 1. [Albert Johansson](http://twitter.com/albertjohansson)
+1. [Rene](http://wpwebshop.com/premium-wordpress-plugins/)
+1. Sander Van Vilet
+1. [inMotion Hosting](http://www.inmotionhosting.com/)
 
 
 == Installation ==
