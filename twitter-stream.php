@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.4
+Version: 2.4.1
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -49,7 +49,7 @@ if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
 	twitter_stream_delete_cache();
 } elseif(isset($_POST['consumerkey']) && isset($_POST['consumersecret'])) {
 	//check if keys have been sent via POST & save them here.
-	update_option('twitter_stream_keys', array('consumer_key' => $_POST['consumerkey'], 'consumer_secret' => $_POST['consumersecret']));
+	update_option('twitter_stream_keys', array('consumer_key' => trim($_POST['consumerkey']), 'consumer_secret' => trim($_POST['consumersecret'])));
 	//redirect user to this page now that the keys have been saved. Remove the extra url param or we will endless loop.
 	header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']));
 }
@@ -116,8 +116,9 @@ function twitter_stream_options_page() {
 			<li><strong>Website:</strong> Generally the URL to the home page of your blog.</li>
 			<li><strong>Callback URL:</strong> Enter the following: <strong>http://<?php echo $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback'; ?></strong></li>
 		</ul>
-		<p>Once you have completed the registration you will be given a page with two very important keys <em style="color: #666;">(Consumer Key &amp; Consumer Secret)</em> on please enter them in the boxes below &amp; hit save.</p>
-		<p><strong>N.B:</strong> For those who a curious Twitter Stream does not need the app to have write access so if you are want to make sure security is tight you can make sure 'read-only' is picked on your <a href="http://dev.twitter.com/apps/">App's Settings page</a>.</p>
+		<p>Once you have completed the registration you will be given a page with two very important keys <em style="color: #666;">(Consumer Key &amp; Consumer Secret)</em>. Please enter them in the boxes below &amp; hit save.</p>
+		<p>When you are entering your Consumer Key &amp; Consumer Secret please make sure you do not copy any extraneous characters such as spaces. While we try our best to remove them for you, sometimes we cannot &amp; this will cause the dreaded 401 error when trying to authorize the plugin.</p>
+		<p><strong>N.B:</strong> For those who are curious Twitter Stream does not need the app to have write access so if you are want to make sure security is tight you can make sure 'read-only' is picked on your <a href="http://dev.twitter.com/apps/">App's Settings page</a>.</p>
 		<h3>Enter Key Information</h3>
 		<form action="<?php echo str_replace( '%7E', '~', $_SERVER['REQUEST_URI']); ?>" method="post">
 			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">Consumer Key:</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
@@ -130,6 +131,8 @@ function twitter_stream_options_page() {
 		<h3>Sign In With Twitter</h3>
 		<p>Now you have registered an Twitter App and the keys have been saved, we can now sign you into Twitter &amp; finally get Twitter Stream up and running. To sign in simply click the 'sign in with Twitter' button below, check the details on the page that follows match that of the Twitter App you created, and finally press the 'allow' button.</p>
 		<div style="margin: 15px 0 15px 0;"><a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=redirect'; ?>"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/darker.png" alt="Sign in with Twitter"/></a></div>
+		<h3>I'm Getting A 401 Error! What Do I Do?</h3>
+		<p>This error is generally caused by one of the keys you provided either being incorrect or having unneeded characters in it, such as spaces or tabs at the start. This can sometimes happen when coping the keys from Twitter's website. Please make sure this is not the case. If you are still having trouble please get in touch via http://return-true.com.</p>
 		<h3>What If I Made A Mistake Entering The Keys?</h3>
 		<p>If you made a mistake entering the keys please click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
 	<?php
@@ -552,10 +555,6 @@ if(get_bloginfo('version') >= '2.8') {
 				<p>
                   <label for="<?php echo $this->get_field_id('retweets'); ?>">
 				    <?php _e('Show Retweets:', 'twit_stream'); ?>
-                    <br />
-                    <small>
-					  <?php _e('(Warning: Uses 2 API requests.)', 'twit_stream'); ?>
-                    </small>
                     <input class="widefat" id="<?php echo $this->get_field_id('retweets'); ?>" name="<?php echo $this->get_field_name('retweets'); ?>" type="checkbox" <?php if($retweets == TRUE) echo 'checked="checked"'; ?> />
                   </label>
                 </p>
