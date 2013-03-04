@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.4.1
+Version: 2.5
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -263,24 +263,27 @@ function twitter_stream($args = FALSE) {
 		}
 		/* Create a TwitterOauth object with consumer/user tokens. */
 		$connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, $access_token['oauth_token'], $access_token['oauth_token_secret']);
-		$connection->format = 'xml';
+		$connection->format = 'json';
 		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
 	}
 	
 	if($cache === FALSE) {
-		//If cache was set to false we need to update the cache;
+		//If cache was set to false we need to update the cache
+		//convert decoded array back to json to store
+		$cache_content = json_encode($content);
 		$fp = fopen($cache_path, 'w');
 		if(flock($fp, LOCK_EX)) {
-			fwrite($fp, $content);
+			fwrite($fp, $cache_content);
 			flock($fp, LOCK_UN);	
 		}
 		fclose($fp);
 	}
+
 	
 	if($r['echo'] !== TRUE || $r['echo'] != 'true' || $r['echo'] != 'TRUE' || $r['echo'] != '1') {
-		return twitter_stream_convert_to_xml($content);
+		return $content;
 	}
-	
+
 	$tweetfollow = twitter_stream_parse_tweets($content, $r);
 	
 	$output = $tweetfollow[0];
@@ -315,6 +318,8 @@ function twitter_stream_cache($modtime, $cache_path, $cache_time) {
 	
 	//We have already checked that the file exists. So we can assume it exsits here.
 	$data = file_get_contents($cache_path);
+
+	$data = json_decode($data);
 	
 	if($data !== FALSE) {
 		return $data; //return our data if there wasn't a problem
@@ -348,18 +353,14 @@ function twitter_stream_delete_cache() {
 
 //parse tweets
 function twitter_stream_parse_tweets($content, $r) {
-				
-	$twitxml = twitter_stream_convert_to_xml($content);
-	if($twitxml === FALSE || isset($twitxml->error)) {
-		return FALSE;
-	}
-	if(empty($twitxml)) {
-		return FALSE;
-	}
-	$followers = $twitxml->status[0]->user->followers_count;
-	$username = $twitxml->status[0]->user->screen_name;
+
+	if(!$content)
+		return false;
+
+	$followers = $content[0]->user->followers_count;
+	$username = $content[0]->user->screen_name;
 	$o = '';
-	foreach($twitxml->status as $tweet) {
+	foreach($content as $tweet) {
 	
 		//Find all URL's mentioned and store them in $matches. 
 		//$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
