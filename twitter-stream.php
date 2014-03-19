@@ -23,6 +23,12 @@ Author URI: http://return-true.com
 	a.twitter-date & a:hover.twitter-date is for the date's permalink.
 */
 
+/*
+	TODO:
+		- Add ability to disable profile link completely (currently just empties the element)
+		- Add ability to customize Date location.
+*/
+
 //Setup oAuth data such as Twitter Streams Consumer Key etc.
 if($keys = get_option('twitter_stream_keys')) {
 	define('CONSUMER_KEY', $keys['consumer_key']);
@@ -107,22 +113,21 @@ function twitter_stream_options_page() {
 	$token = get_option('twitter_stream_token');
 	if(!defined('CONSUMER_KEY') && !defined('CONSUMER_SECRET')) {
 	?>
-		<p style="font-weight:bold; color:#666;">oAuth is no longer optional. Due to changes to the Twitter API you must authorize Twitter Stream with your Twitter account by following the instructions below.</p>
 		<h3>Create A Twitter App</h3>
-		<p>To sign into Twitter via Twitter Stream you will need to register for a Twitter App. The process is fairly quick and can be done by clicking the 'Get your consumer keys' button below (opens in new window/tab), please read the following to find out what to enter.</p>
+		<p>To sign into Twitter via Twitter Stream you will need to register for a Twitter App. The process is fairly quick and can be done by clicking the 'Get your consumer keys' button below (opens in new window/tab), <strong>please read the instructions below first</strong>. Due to how finnicky oAuth can be, any tiny mistakes can and will cause a lot of heartache.</p>
 		<div style="margin: 15px 0 15px 0;"><a href="http://dev.twitter.com/apps/new/" target="_blank"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/twitter-oauth-button.png" alt="Get your consumer keys"/></a></div>
+		<p>In the fields you are given you will need to enter the following information. <strong>Important:</strong> You must enter the callback URL, failing to do so will result in an error in the next step.</p>
 		<ul>
-			<li><strong>App Name &amp; Description:</strong> Any name to identify your blog (e.g. My Stream), it cannot contain the word 'Twitter'. You don't have to fill in description.</li>
-			<li><strong>Website:</strong> Generally the URL to the home page of your blog.</li>
+			<li><strong>Name &amp; Description:</strong> Any name to identify your blog (e.g. <?php echo bloginfo('name'); ?> Stream), it cannot contain the word 'Twitter'. The description is also required, just enter something that will remind you what you created the app for, must be 10 characters or more.</li>
+			<li><strong>Website:</strong> Generally the URL to the home page of your blog. Again required, and must be related to your website.</li>
 			<li><strong>Callback URL:</strong> Enter the following: <strong>http://<?php echo $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback'; ?></strong></li>
 		</ul>
-		<p>Once you have completed the registration you will be given a page with two very important keys <em style="color: #666;">(Consumer Key &amp; Consumer Secret)</em>. Please enter them in the boxes below &amp; hit save.</p>
-		<p>When you are entering your Consumer Key &amp; Consumer Secret please make sure you do not copy any extraneous characters such as spaces. While we try our best to remove them for you, sometimes we cannot &amp; this will cause the dreaded 401 error when trying to authorize the plugin.</p>
-		<p><strong>N.B:</strong> For those who are curious Twitter Stream does not need the app to have write access so if you are want to make sure security is tight you can make sure 'read-only' is picked on your <a href="http://dev.twitter.com/apps/">App's Settings page</a>.</p>
+		<p>Once you have completed the registration click on the API Keys tab. The two key's you need are the <strong>API Key</strong> and the <strong>API Secret</strong>. Please enter them in the boxes below &amp; hit save.</p>
+		<p><strong>N.B:</strong> Apps are automatically set for Read-Only access. This is perfectly fine for Twitter Stream.</p>
 		<h3>Enter Key Information</h3>
 		<form action="<?php echo str_replace( '%7E', '~', $_SERVER['REQUEST_URI']); ?>" method="post">
-			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">Consumer Key:</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
-			<label for="consumersecret" style="font-weight:bold;display:block;width:150px;margin-top:5px;">Consumer Secret:</label> <input type="text" value="" id="consumersecret" name="consumersecret" />
+			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">API Key:</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
+			<label for="consumersecret" style="font-weight:bold;display:block;width:150px;margin-top:5px;">API Secret:</label> <input type="text" value="" id="consumersecret" name="consumersecret" />
 			<input type="submit" value="Save" style="display:block;margin-top:10px;" />
 		</form>
 	<?php
@@ -132,14 +137,20 @@ function twitter_stream_options_page() {
 		<p>Now you have registered an Twitter App and the keys have been saved, we can now sign you into Twitter &amp; finally get Twitter Stream up and running. To sign in simply click the 'sign in with Twitter' button below, check the details on the page that follows match that of the Twitter App you created, and finally press the 'allow' button.</p>
 		<div style="margin: 15px 0 15px 0;"><a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=redirect'; ?>"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/darker.png" alt="Sign in with Twitter"/></a></div>
 		<h3>I'm Getting A 401 Error! What Do I Do?</h3>
-		<p>This error is generally caused by one of the keys you provided either being incorrect or having unneeded characters in it, such as spaces or tabs at the start. This can sometimes happen when coping the keys from Twitter's website. Please make sure this is not the case. If you are still having trouble please get in touch via http://return-true.com.</p>
+		<p>Here are a few common issues that cause this error. Please make sure one of these is not the issue. If you are still having trouble please get in touch via http://return-true.com.</p>
+		<ul>
+			<li>Whitespace in the Keys. This is less of a problem now as Twitter Stream tries to strip any whitespace from the keys, but it can still happen in some cases.</li>
+			<li>No Callback URL set on the app. This happens quite a lot. It is very, very important to set the callback URL when creating your app with Twitter. Twitter Stream will generally fail with a 401 error if you do not enter it.</li>
+			<li>Wrong Keys. I know it sounds like "Is it switched on?", but sometimes the wrong keys have been used. Please make sure to enter the <strong>API Key</strong> &amp; <strong>API Secret</strong> from below the Application Settings header found on the API Keys tab of your Twitter application page.</li>
+		</ul>
+		<p>As mention, if none of those help please don't hesitate to get in touch &amp; I'll try to help as soon as I am able.</p>
 		<h3>What If I Made A Mistake Entering The Keys?</h3>
 		<p>If you made a mistake entering the keys please click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">delete</a> to remove them.</p>
 	<?php
 	} else {
 	?>
 		<h3>Twitter Stream Authorized!</h3>
-		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://dev.twitter.com">Twitter's</a> Development website, login, then hover over your username (top right) and hit <strong>My Applications</strong>. Find the name of the application you created when authorizing Twitter Stream and click it. Next press the 'Delete' tab. Remember that doing this will obviously stop Twitter Stream from working. Once you've done that, click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">here</a> to revoke your keys from the WordPress database as they are no longer needed.</p>
+		<p>If you ever wish to revoke Twitter Stream's access to your twitter account just go to <a href="http://dev.twitter.com">Twitter's</a> Development website, login, then hover over your username (top right) and hit <strong>My Applications</strong>. Find the name of the application you created when authorizing Twitter Stream and click it. Next press the 'Delete' button at the bottom of the page. Remember that doing this will obviously stop Twitter Stream from working. Once you've done that, click <a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=deletekeys'; ?>" style="color: #aa0000;">here</a> to revoke your keys from the WordPress database as they are no longer needed.</p>
 		<h3>What Do I Do Now?</h3>
 		<p>The easiest way to use Twitter Stream is to add it via the widgets. Just go to the widgets page and add the Twitter Stream widget to one of your widget areas. The alternative is to use the function by including &lt;php twitter_stream(); ?&gt; in your template somewhere. You can customize it using the parameters shown <a href="http://return-true.com/2009/12/wordpress-plugin-twitter-stream/">here</a>.
 		<h3>I Need To Change My Keys!</h3>
