@@ -40,6 +40,7 @@ cd $DEST_DIR
 for file in $(cat "$SRC_DIR/.svnignore" 2> /dev/null)
 do
 	rm -rf $DEST_DIR/$file
+	echo "$file deleted"
 done
 
 # Transform the readme
