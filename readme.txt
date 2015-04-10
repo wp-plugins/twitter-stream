@@ -1,6 +1,6 @@
 === Twitter Stream ===
 Contributors: veneficusunus  
-Donate link: http://return-true.com/donations/  
+Donate link: http://return-true.com/donate/
 Tags: twitter, timeline, tweets  
 Requires at least: 2.8  
 Tested up to: 4.1.1  

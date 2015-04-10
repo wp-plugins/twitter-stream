@@ -39,7 +39,7 @@ cd $DEST_DIR
 # check .svnignore
 for file in $(cat "$SRC_DIR/.svnignore" 2> /dev/null)
 do
-	rm -rf $DEST_DIR/$file
+	rm -rf "$DEST_DIR/$file"
 	echo "$file deleted"
 done
 
