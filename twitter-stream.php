@@ -3,7 +3,7 @@
 Plugin Name: Twitter Stream
 Plugin URI: http://return-true.com/
 Description: A simple Twitter plugin designed to show the provided username's Twitter updates. Includes file caching to prevent API overuse.
-Version: 2.6.3
+Version: 2.7
 Author: Paul Robinson
 Author URI: http://return-true.com
 
@@ -64,7 +64,7 @@ if(isset($_GET['wptwit-page']) && $_GET['wptwit-page'] == 'redirect') {
 add_action('admin_menu', 'twitter_stream_add_options');
 //add our page to the settings sub menu
 function twitter_stream_add_options() {
-	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');	
+	add_options_page('Twitter Stream Authorize Page', 'Twitter Stream', 8, 'twitterstreamauth', 'twitter_stream_options_page');
 }
 
 //Create the page...
@@ -122,19 +122,19 @@ function twitter_stream_options_page() {
 			<li><strong>Website:</strong> Generally the URL to the home page of your blog. Again required, and must be related to your website.</li>
 			<li><strong>Callback URL:</strong> Enter the following: <strong>http://<?php echo $_SERVER['HTTP_HOST'] . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=callback'; ?></strong></li>
 		</ul>
-		<p>Once you have completed the registration click on the API Keys tab. The two key's you need are the <strong>API Key</strong> and the <strong>API Secret</strong>. Please enter them in the boxes below &amp; hit save.</p>
-		<p><strong>N.B:</strong> Apps are automatically set for Read-Only access. This is perfectly fine for Twitter Stream.</p>
+		<p>Once you have completed the registration click on the <strong>Keys and Access Tokens</strong> tab. The two key's you need are the <strong>Consumer Key (API Key)</strong> and the <strong>Consumer Secret (API Secret)</strong>. Please enter them in the boxes below &amp; hit save.</p>
+		<p><strong>N.B:</strong> Apps are automatically set for Read/Write access. If you wish you can switch this to Read Only as Twitter Stream does not need write access to your Twitter account.</p>
 		<h3>Enter Key Information</h3>
 		<form action="<?php echo str_replace( '%7E', '~', $_SERVER['REQUEST_URI']); ?>" method="post">
-			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">API Key:</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
-			<label for="consumersecret" style="font-weight:bold;display:block;width:150px;margin-top:5px;">API Secret:</label> <input type="text" value="" id="consumersecret" name="consumersecret" />
+			<label for="consumerkey" style="font-weight:bold;display:block;width:150px;">Consumer Key (API Key):</label> <input type="text" value="" id="consumerkey" name="consumerkey" />
+			<label for="consumersecret" style="font-weight:bold;display:block;width:150px;margin-top:5px;">Consumer Secret (API Secret):</label> <input type="text" value="" id="consumersecret" name="consumersecret" />
 			<input type="submit" value="Save" style="display:block;margin-top:10px;" />
 		</form>
 	<?php
 	} elseif(!is_array($token) && !isset($token['oauth_token'])) {
 	?>
 		<h3>Sign In With Twitter</h3>
-		<p>Now you have registered an Twitter App and the keys have been saved, we can now sign you into Twitter &amp; finally get Twitter Stream up and running. To sign in simply click the 'sign in with Twitter' button below, check the details on the page that follows match that of the Twitter App you created, and finally press the 'allow' button.</p>
+		<p>Now you have registered a Twitter App and the keys have been saved, we can sign you into Twitter &amp; finally get Twitter Stream up and running. To sign in simply click the 'sign in with Twitter' button below, check the details on the page that follows match that of the Twitter App you created, and finally press the 'allow' button.</p>
 		<div style="margin: 15px 0 15px 0;"><a href="<?php echo preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=redirect'; ?>"><img src="<?php echo WP_PLUGIN_URL; ?>/twitter-stream/darker.png" alt="Sign in with Twitter"/></a></div>
 		<h3>I'm Getting A 401 Error! What Do I Do?</h3>
 		<p>Here are a few common issues that cause this error. Please make sure one of these is not the issue. If you are still having trouble please get in touch via <a href="http://return-true.com">http://return-true.com</a>.</p>
@@ -171,10 +171,10 @@ add_action( 'init', 'twitter_stream_init' );
 
 // Initialize the text domain for translations.
 function twitter_stream_init() {
-	
+
 	$plugin_dir = basename(dirname(__FILE__));
 	load_plugin_textdomain( 'twit_stream', 'wp-content/plugins/' . $plugin_dir, $plugin_dir );
-	
+
 }
 
 //Setup the notice just in case a PHP version less than 5 is installed.
@@ -182,11 +182,11 @@ add_action('admin_head', 'twitter_stream_activation_notice');
 
 //Check the version of PHP using the version constant. If the version is less than 5 run the notification.
 function twitter_stream_activation_notice() {
-	
+
 	if(version_compare(PHP_VERSION, '5.0.0', '<')) {
 		add_action('admin_notices', 'twitter_stream_show_notice');
 	}
-		
+
 }
 
 //Define the notification function for the check above. Advise the user to upgrade their PHP version or uninstall & consider an alternative plugin.
@@ -208,11 +208,11 @@ function twitter_stream($args = FALSE) {
 	} else {
 		parse_str($args, $r); //It's a query string, parse out our values into our options array.
 	}
-	
+
 	if(!isset($r)) {
 		$r = array();
 	}
-	
+
 	$defaults = array( //Set some defaults
 					'username' => '',
 					'count' => '10',
@@ -223,9 +223,9 @@ function twitter_stream($args = FALSE) {
 					'cache_time' => 1800,
 					'echo' => TRUE
 					);
-					
+
 	$r = array_merge($defaults, $r); //Merge our defaults array onto our options array to fill in any missing values with defaults.
-	
+
 	if($r['retweets'] == "on")
 		$r['retweets'] = "true";
 
@@ -233,13 +233,13 @@ function twitter_stream($args = FALSE) {
 		_e('You must have PHP5 or higher for this plugin to work.', 'twit_stream');
 		return FALSE;
 	}
-	
+
 	if($r['username'] != '') {
 		$cache_path = dirname(__FILE__).'/'.$r['username'].'.cache'; //Set our cache path. Can be changed if you feel the need.
 	} else {
 		$cache_path = dirname(__FILE__).'/authuser.cache'; //Set our cache path. Can be changed if you feel the need.
 	}
-	
+
 	//First we need to check to see if a cache file has already been made.
 	if(file_exists($cache_path)) {
 		$modtime = filemtime($cache_path); //Get the time the file was last modified.
@@ -263,7 +263,7 @@ function twitter_stream($args = FALSE) {
             prune_super_cache(WP_CONTENT_DIR.'/cache/', true );
         }
 	}
-	
+
 	//No content is set so we either need to create the cache or it has been invalidated and we need to renew it.
 	if(!isset($content)) {
 		/* Get user access tokens out of the session. */
@@ -277,7 +277,7 @@ function twitter_stream($args = FALSE) {
 		$connection->format = 'json';
 		$content = $connection->get('statuses/user_timeline', array('screen_name' => $r['username'], 'count' => $r['count'], 'include_rts' => $r['retweets']));
 	}
-	
+
 	if($cache === FALSE) {
 		//If cache was set to false we need to update the cache
 		//convert decoded array back to json to store
@@ -285,65 +285,65 @@ function twitter_stream($args = FALSE) {
 		$fp = fopen($cache_path, 'w');
 		if(flock($fp, LOCK_EX)) {
 			fwrite($fp, $cache_content);
-			flock($fp, LOCK_UN);	
+			flock($fp, LOCK_UN);
 		}
 		fclose($fp);
 	}
 
-	
+
 	if($r['echo'] !== TRUE || $r['echo'] != 'true' || $r['echo'] != 'TRUE' || $r['echo'] != '1') {
 		return $content;
 	}
 
 	$tweetfollow = twitter_stream_parse_tweets($content, $r);
-	
+
 	$output = $tweetfollow[0];
-	
+
 	//Now let's do some highlighting & auto linking.
 	//Find all the @replies and place them in a span so CSS can be used to highlight them.
 	$output = preg_replace('~(\@[a-z0-9_]+)~ise', "'<span class=\"at-reply\"><a href=\"http://twitter.com/'.substr('$1', 1).'\" title=\"View '.substr('$1', 1).'\'s profile\">$1</a></span>'", $output);
 	//Find all the #tags and place them in a span so CSS can be used to highlight them.
 	$output = preg_replace('~(\#[a-z0-9_]+)~ise', "'<span class=\"hash-tag\"><a href=\"http://twitter.com/search?q='.urlencode('$1').'\" title=\"Search for $1 on Twitter\">$1</a></span>'", $output);
-	
+
 	//Show follower count
 	if($r['show_followers']) {
 		$output .= '<div class="follower-count">'.$tweetfollow[1].' followers</div>';
 	}
-	
+
 	//Link to users profile. Can be customized via the profile_link parameter & via CSS targeting.
 	$output .= '<div class="profile-link"><a href="http://twitter.com/'.$tweetfollow[2].'" title="'.$r['profile_link'].'">'.$r['profile_link'].'</a></div>';
-	
-	
+
+
 	echo '<div class="twitter-stream">'.$output.'</div>';
-	
+
 }
 
 function twitter_stream_cache($modtime, $cache_path, $cache_time) {
-	
+
 	$thirtyago = time() - $cache_time; //the timestamp thirty minutes ago
-	
+
 	if($modtime < $thirtyago) {
 		//our cache is older than 30 minutes return FALSE so the script will run the cache updater.
 		return FALSE;
 	}
-	
+
 	//We have already checked that the file exists. So we can assume it exsits here.
 	$data = file_get_contents($cache_path);
 
 	$data = json_decode($data);
-	
+
 	if($data !== FALSE) {
 		return $data; //return our data if there wasn't a problem
 	}
-	
+
 }
 
 function twitter_stream_delete_cache() {
 
 	$cache_path = dirname(__FILE__);
-	
+
 	if ($handle = opendir($cache_path)) {
-			
+
 		while (false !== ($file = readdir($handle))) {
 			if(FALSE !== stristr($file, '.cache')) {
 				unlink($cache_path.'/'.$file);
@@ -351,7 +351,7 @@ function twitter_stream_delete_cache() {
 				break;
 			}
 		}
-		
+
 		closedir($handle);
 	}
 	if($deleted === true) {
@@ -359,7 +359,7 @@ function twitter_stream_delete_cache() {
 	} else {
 		header('Location: ' . preg_replace('/&wptwit-page=[^&]*/', '', $_SERVER['REQUEST_URI']) . '&wptwit-page=cachefailed');
 	}
-	
+
 }
 
 //parse tweets
@@ -372,40 +372,40 @@ function twitter_stream_parse_tweets($content, $r) {
 	$username = $content[0]->user->screen_name;
 	$o = '';
 	foreach($content as $tweet) {
-	
-		//Find all URL's mentioned and store them in $matches. 
+
+		//Find all URL's mentioned and store them in $matches.
 		//$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
 		//New regex pattern to match t.co urls thanks to Jonny Vaughan
 		$pattern = "/(http:\/\/|https:\/\/)?(?(1)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([-a-z0-9_]+\.)?[-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?)|(www\.[a-z][-a-z0-9]+\.[a-z]+(\.[a-z]{2,2})?))\/?[a-z0-9._\/~#&=;%+?-]+[a-z0-9\/#=?]{1,1}/is";
 		$out_count = preg_match_all($pattern, $tweet->text, $matches);
-		
+
 		//If there were any matches
 		if($out_count > 0) {
 			//Loop through all the full matches
 			foreach($matches[0] as $match) {
 				//Use a simple string replace to replace each URL with a HTML <a href>.
-				$tweet->text = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $tweet->text);	
+				$tweet->text = str_replace($match, '<a href="'.$match.'" target="_blank" class="twitter-link">'.$match.'</a>', $tweet->text);
 			}
 		}
-					
+
 		$o .= "<p>".$tweet->text;
-		
+
 		if($r['date'] !== FALSE) {
 			$tweet->created_at = strtotime($tweet->created_at);
-				
+
 			if($r['date'] === TRUE || $r['date'] == 'true' || $r['date'] == 'TRUE' || $r['date'] == '1') {
 				$o .= ' - ';
 			} else {
 				$r['date'] = trim($r['date']);
-				$o .= " {$r['date']} ";	
+				$o .= " {$r['date']} ";
 			}
 			$o .= "<a href=\"http://twitter.com/{$username}/statuses/{$tweet->id}/\" title=\"Permalink to this tweet\" target=\"_blank\" class=\"twitter-date\">".twitter_stream_time_ago($tweet->created_at)."</a>";
 		}
-				
+
 		$o .= "</p>";
-			
+
 	}
-		
+
 	return array($o,$followers,$username);
 
 }
@@ -417,7 +417,7 @@ function twitter_stream_convert_to_xml($content) {
 	$content = str_replace('&amp;', '&amp;amp;', $content);
 	//Convert the string recieved from twitter into a simple XML object.
 	$twitxml = simplexml_load_string($content); //Supress errors as we check for any next anyway.
-	
+
 	if($twitxml === FALSE) {
 		//Twitter was unable to provide the stream requested. Let's notify the user.
 		echo '<p>';
@@ -430,7 +430,7 @@ function twitter_stream_convert_to_xml($content) {
 		echo '<p>'.$twitxml->error.'</p>';
 		return FALSE;
 	}
-	
+
 	return $twitxml;
 
 }
@@ -456,9 +456,9 @@ function twitter_stream_time_ago($time)
    if($difference != 1) {
 	    $period = $plural[$j];
    } else {
-		$period = $singular[$j];    
+		$period = $singular[$j];
    }
-   
+
    //French translation fix
    if(strcasecmp(get_bloginfo('language'), 'fr-FR') === 0) {
     return "{$tense} {$difference} {$period}";
@@ -472,12 +472,12 @@ function twitter_stream_time_ago($time)
 if(get_bloginfo('version') >= '2.8') {
 
 	class TwitterStreamWidget extends WP_Widget {
-	 
+
 		function TwitterStreamWidget() {
-			parent::WP_Widget(FALSE, $name = 'Twitter Stream');    
+			parent::WP_Widget(FALSE, $name = 'Twitter Stream');
 		}
-	 
-		function widget($args, $instance) {        
+
+		function widget($args, $instance) {
 			extract( $args );
 			if(empty($instance['count']))
 				$instance['count'] = 10;
@@ -496,24 +496,24 @@ if(get_bloginfo('version') >= '2.8') {
 			?>
 				  <?php echo $before_widget; ?>
 					  <?php echo $before_title . $instance['title'] . $after_title; ?>
-	 					
-						  <?php 
+
+						  <?php
 						  unset($instance['title']);
-						  twitter_stream_args($instance); 
-						  
+						  twitter_stream_args($instance);
+
 						  ?>
-	 
+
 				  <?php echo $after_widget; ?>
 			<?php
-	
+
 		}
-	 
-	
-		function update($new_instance, $old_instance) {                
+
+
+		function update($new_instance, $old_instance) {
 			return $new_instance;
 		}
-	 
-		function form($instance) {                
+
+		function form($instance) {
 			$title = esc_attr($instance['title']);
 			$username = esc_attr($instance['username']);
 			$count = esc_attr($instance['count']);
@@ -590,11 +590,11 @@ if(get_bloginfo('version') >= '2.8') {
                     <input class="widefat" id="<?php echo $this->get_field_id('cache_time'); ?>" name="<?php echo $this->get_field_name('cache_time'); ?>" type="text" value="<?php echo $cache_time; ?>" />
                   </label>
                 </p>
-			<?php 
-	
+			<?php
+
 		}
 	}
-	
+
 	add_action('widgets_init', create_function('', 'return register_widget("TwitterStreamWidget");'));
 
 }

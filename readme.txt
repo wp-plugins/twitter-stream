@@ -1,11 +1,11 @@
 === Twitter Stream ===
-Contributors: veneficusunus  
-Donate link: http://return-true.com/donate/
+Contributors: Paul B Robinson  
+Donate link: http://return-true.com/donate/  
 Tags: twitter, timeline, tweets  
 Requires at least: 2.8  
-Tested up to: 4.1.1  
-Stable tag: 2.6.4
-  
+Tested up to: 4.2  
+Stable tag: 2.7
+
 Twitter Stream is a very simple Twitter plugin designed to show a users Twitter timeline. Also includes file caching to stop API overuse.
 
 == Description ==
@@ -74,6 +74,9 @@ You can. I haven't added any styles so I could keep the plugin on one file & kee
 = I Have Some More Questions! =
 To make it easier for me to answer questions & to keep everything in one place, please go to the [blog post](http://return-true.com/wordpress-plugin-twitter-stream/ "Check here for answers to any questions.") for Twitter Stream on my website. If you have any requests or problems please leave a comment there or drop me an email via the contact form also available there. Thanks.
 
+= I Need Help =
+I'm happy to help however I can. You can get in touch via my [website](http://return-true.com), or if it can be said in 140 characters I'm on Twitter as [@paulbrobinson](http://twitter.com/paulbrobinson). I promise to get back to you as soon as I can.
+
 == Changelog ==
 
 = 2.6.4 =
@@ -83,7 +86,7 @@ To make it easier for me to answer questions & to keep everything in one place, 
 * Minor changes to documentation links + reminder of rebuild of plugin.
 
 = 2.6.2 =
-* !
+* Issue with migration between Git and SVN...
 
 = 2.6.1 =
 * Add if exists to TwitterOAuth class to make sure it isn't already defined, preventing clashes with other oAuth based plugins.
@@ -131,7 +134,7 @@ To make it easier for me to answer questions & to keep everything in one place, 
 * Added chmod for cache creation to try and fix permission denied problems on servers with different file permission setups.
 
 = 2.2 =
-* Added small fix to stop nameless cache file being generated when no username is specified... 
+* Added small fix to stop nameless cache file being generated when no username is specified...
 
 = 2.1.9 =
 * Fixed an error which was stopping the permalinks on the dates going to the correct URL.
